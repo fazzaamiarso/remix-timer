@@ -3,7 +3,7 @@ import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useLoaderData, useTransition } from "@remix-run/react";
 import { useRef, useState, useEffect } from "react";
-import Timer from "~/component/timer";
+import Timer from "~/component/Timer";
 import { db } from "~/utils/prisma.server";
 
 export const loader: LoaderFunction = async () => {
