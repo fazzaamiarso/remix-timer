@@ -2,30 +2,9 @@ import type { Task } from "@prisma/client";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useLoaderData, useTransition } from "@remix-run/react";
-import { useRef, useState, useEffect, ChangeEvent } from "react";
+import { useRef, useState, useEffect } from "react";
+import Timer from "~/component/timer";
 import { db } from "~/utils/prisma.server";
-
-function useInterval(callback: () => void, delay: null | number) {
-  const savedCallback = useRef<typeof callback>();
-
-  // Remember the latest callback.
-  useEffect(() => {
-    savedCallback.current = callback;
-    console.log("callbackRef changed");
-  }, [callback]);
-
-  // Set up the interval.
-  useEffect(() => {
-    function tick() {
-      if (!savedCallback.current) return;
-      savedCallback.current();
-    }
-    if (delay !== null) {
-      let id = setInterval(tick, delay);
-      return () => clearInterval(id);
-    }
-  }, [delay]);
-}
 
 export const loader: LoaderFunction = async () => {
   const data = await db.task.findMany();
@@ -59,92 +38,34 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function Index() {
-  const [chosenTime, setChosenTime] = useState(25);
-  const [time, setTime] = useState({ minutes: chosenTime, seconds: 0 });
-  const [start, setStart] = useState(false);
+  const [isBreak, setIsBreak] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const transition = useTransition();
   const tasks = useLoaderData<Task[]>();
 
-  useInterval(
-    () => {
-      if (time.seconds === 0 && time.minutes === 0) return clearTimer();
-      if (time.seconds === 0)
-        return setTime((prev) => ({ minutes: prev.minutes - 1, seconds: 59 }));
-      else
-        setTime((prev) => ({
-          minutes: prev.minutes,
-          seconds: prev.seconds - 1,
-        }));
-    },
-    start ? 1000 : null
-  );
+  const toggleBreak = () => setIsBreak(!isBreak);
 
   useEffect(() => {
     if (!inputRef.current) return;
     if (transition.type === "actionSubmission") inputRef.current.value = "";
   }, [transition]);
 
-  const changeTime = (e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target || start) return;
-
-    if (Number(e.target.value) > 60) return;
-    setChosenTime(Number(e.target.value));
-    setTime({ minutes: Number(e.target.value), seconds: 0 });
-  };
-
-  const startTimer = () => {
-    setStart(true);
-  };
-  const pauseTimer = () => {
-    setStart(false);
-  };
-  const clearTimer = () => {
-    setStart(false);
-    setTime({ minutes: chosenTime, seconds: 0 });
-  };
-
   return (
     <div className="w-10/12 max-w-lg mx-auto py-4">
       <h1 className="text-2xl font-bold text-red-700">
         Welcome to Remix Timer
       </h1>
-      <div className="mx-auto space-y-4">
-        <div className="text-xl">{`${String(time.minutes).padStart(
-          2,
-          "0"
-        )}:${String(time.seconds).padStart(2, "0")}`}</div>
-        <input
-          type="text"
-          value={chosenTime}
-          onChange={changeTime}
-          pattern="[0-9]{2}"
-          maxLength={2}
-        />
-        <div className="flex gap-3 ">
-          <button
-            type="button"
-            onClick={startTimer}
-            className="py-3 px-1 bg-pink-500"
-          >
-            Start
-          </button>
-          <button
-            type="button"
-            onClick={pauseTimer}
-            className="py-3 px-1 ring-pink-500 ring-1"
-          >
-            Pause
-          </button>
-          <button
-            type="button"
-            onClick={clearTimer}
-            className="py-3 px-1 text-pink-500"
-          >
-            Stop
-          </button>
-        </div>
-      </div>
+      <button
+        onClick={toggleBreak}
+        className="rounded-md py-2 bg-blue-500 font-bold"
+      >
+        {isBreak ? "Study" : "Break"}
+      </button>
+      {isBreak ? (
+        <Timer key={Date.now()} initialTime={10} />
+      ) : (
+        <Timer key={Date.now()} initialTime={25} />
+      )}
       <div className="mt-8">
         <ul className="space-y-4 pb-4`">
           {tasks.length ? (
