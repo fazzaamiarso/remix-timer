@@ -16,4 +16,5 @@ model Task {
   updatedAt  DateTime @updatedAt
   taskName  String
   isCompleted Boolean @default(false)
+  completionTime Int @default(0)
 }

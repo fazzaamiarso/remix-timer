@@ -7,7 +7,7 @@ import {
   useLoaderData,
   useTransition
 } from "@remix-run/react";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, ChangeEvent } from "react";
 import Timer from "~/component/Timer";
 import { db } from "~/utils/prisma.server";
 
@@ -56,6 +56,8 @@ export default function Index() {
   const tasks = useLoaderData<Task[]>();
 
   const [isOngoingSession, setIsOngoingSession] = useState(false);
+  const [timer, setTimer] = useState({ minutes: 25, seconds: 0 });
+  const [initialTime, setInitialTime] = useState(25);
 
   const toggleBreak = () => {
     if (
@@ -63,13 +65,18 @@ export default function Index() {
       !confirm("Are you sure want to switch? Session will be reset")
     )
       return;
+    setInitialTime(isBreak ? 10 : 25);
+    setTimer({ minutes: isBreak ? 10 : 25, seconds: 0 });
     setIsBreak(!isBreak);
     setIsOngoingSession(false);
   };
 
   useEffect(() => {
     if (!inputRef.current) return;
-    if (transition.type === "actionSubmission") inputRef.current.value = "";
+    if (transition.type === "actionSubmission") {
+      inputRef.current.value = "";
+      inputRef.current.focus();
+    }
   }, [transition]);
 
   return (
@@ -83,19 +90,14 @@ export default function Index() {
       >
         {isBreak ? "Study" : "Break"}
       </button>
-      {isBreak ? (
-        <Timer
-          initialTime={10}
-          setIsOngoingSession={setIsOngoingSession}
-          isOngoingSession={isOngoingSession}
-        />
-      ) : (
-        <Timer
-          initialTime={25}
-          setIsOngoingSession={setIsOngoingSession}
-          isOngoingSession={isOngoingSession}
-        />
-      )}
+      <Timer
+        setIsOngoingSession={setIsOngoingSession}
+        isOngoingSession={isOngoingSession}
+        initialTime={initialTime}
+        timer={timer}
+        setTimer={setTimer}
+      />
+
       <div className='mt-8'>
         <ul className='pb-4` space-y-4'>
           {tasks.length ? (
@@ -106,6 +108,8 @@ export default function Index() {
                   id={task.id}
                   taskName={task.taskName}
                   isCompleted={task.isCompleted}
+                  completionTime={task.completionTime}
+                  isOngoingSession={isOngoingSession}
                 />
               );
             })
@@ -138,20 +142,30 @@ type ListItemProps = {
   id: string;
   taskName: string;
   isCompleted: boolean;
+  isOngoingSession: boolean;
+  completionTime: number;
 };
-function ListItem({ id, taskName, isCompleted }: ListItemProps) {
+function ListItem({
+  id,
+  taskName,
+  isCompleted,
+  completionTime,
+  isOngoingSession
+}: ListItemProps) {
   const itemFetcher = useFetcher();
+
+  const toggleCompleted = (e: ChangeEvent<HTMLFormElement>) => {
+    itemFetcher.submit(e.currentTarget, {
+      replace: true
+    });
+  };
 
   return (
     <li>
       <itemFetcher.Form
         method='post'
         className='flex gap-2'
-        onChange={(e) => {
-          itemFetcher.submit(e.currentTarget, {
-            replace: true
-          });
-        }}
+        onChange={toggleCompleted}
       >
         <input
           type='checkbox'

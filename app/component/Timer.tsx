@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, ChangeEvent } from "react";
+import { useRef, useEffect, ChangeEvent } from "react";
 
 function useInterval(callback: () => void, delay: null | number) {
   const savedCallback = useRef<typeof callback>();
@@ -22,40 +22,44 @@ function useInterval(callback: () => void, delay: null | number) {
 }
 
 type TimerProps = {
-  initialTime: number;
   setIsOngoingSession: (value: boolean) => void;
   isOngoingSession: boolean;
+  setTimer: React.Dispatch<
+    React.SetStateAction<{
+      minutes: number;
+      seconds: number;
+    }>
+  >;
+  timer: { minutes: number; seconds: number };
+  initialTime: number;
 };
 
 export default function Timer({
-  initialTime,
   setIsOngoingSession,
-  isOngoingSession
+  isOngoingSession,
+  timer,
+  setTimer,
+  initialTime
 }: TimerProps) {
-  const [time, setTime] = useState({ minutes: initialTime, seconds: 0 });
-
-  useEffect(() => {
-    setTime({ minutes: initialTime, seconds: 0 });
-  }, [initialTime]);
-
   useInterval(
     () => {
-      if (time.seconds === 0 && time.minutes === 0) return clearTimer();
-      if (time.seconds === 0)
-        return setTime((prev) => ({ minutes: prev.minutes - 1, seconds: 59 }));
+      if (timer.seconds === 0 && timer.minutes === 0) return clearTimer();
+      if (timer.seconds === 0)
+        return setTimer((prev) => ({ minutes: prev.minutes - 1, seconds: 59 }));
       else
-        setTime((prev) => ({
+        setTimer((prev) => ({
           minutes: prev.minutes,
           seconds: prev.seconds - 1
         }));
     },
     isOngoingSession ? 1000 : null
   );
+
   const changeTime = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target || isOngoingSession) return;
 
     if (Number(e.target.value) > 60) return;
-    setTime({ minutes: Number(e.target.value), seconds: 0 });
+    setTimer({ minutes: Number(e.target.value), seconds: 0 });
   };
 
   const startTimer = () => {
@@ -66,15 +70,15 @@ export default function Timer({
   };
   const clearTimer = () => {
     setIsOngoingSession(false);
-    setTime({ minutes: initialTime, seconds: 0 });
+    setTimer({ minutes: initialTime, seconds: 0 });
   };
 
   return (
     <div className='mx-auto space-y-4'>
-      <div className='text-xl'>{`${String(time.minutes).padStart(
+      <div className='text-xl'>{`${String(timer.minutes).padStart(
         2,
         "0"
-      )}:${String(time.seconds).padStart(2, "0")}`}</div>
+      )}:${String(timer.seconds).padStart(2, "0")}`}</div>
       <input
         type='text'
         value={initialTime}
