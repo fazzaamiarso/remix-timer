@@ -55,7 +55,17 @@ export default function Index() {
   const transition = useTransition();
   const tasks = useLoaderData<Task[]>();
 
-  const toggleBreak = () => setIsBreak(!isBreak);
+  const [isOngoingSession, setIsOngoingSession] = useState(false);
+
+  const toggleBreak = () => {
+    if (
+      isOngoingSession &&
+      !confirm("Are you sure want to switch? Session will be reset")
+    )
+      return;
+    setIsBreak(!isBreak);
+    setIsOngoingSession(false);
+  };
 
   useEffect(() => {
     if (!inputRef.current) return;
@@ -74,9 +84,17 @@ export default function Index() {
         {isBreak ? "Study" : "Break"}
       </button>
       {isBreak ? (
-        <Timer key={Date.now()} initialTime={10} />
+        <Timer
+          initialTime={10}
+          setIsOngoingSession={setIsOngoingSession}
+          isOngoingSession={isOngoingSession}
+        />
       ) : (
-        <Timer key={Date.now()} initialTime={25} />
+        <Timer
+          initialTime={25}
+          setIsOngoingSession={setIsOngoingSession}
+          isOngoingSession={isOngoingSession}
+        />
       )}
       <div className='mt-8'>
         <ul className='pb-4` space-y-4'>
@@ -125,7 +143,7 @@ function ListItem({ id, taskName, isCompleted }: ListItemProps) {
   const itemFetcher = useFetcher();
 
   return (
-    <li key={id}>
+    <li>
       <itemFetcher.Form
         method='post'
         className='flex gap-2'

@@ -21,10 +21,22 @@ function useInterval(callback: () => void, delay: null | number) {
   }, [delay]);
 }
 
-export default function Timer({ initialTime }: { initialTime: number }) {
-  const [chosenTime, setChosenTime] = useState(initialTime);
-  const [time, setTime] = useState({ minutes: chosenTime, seconds: 0 });
-  const [start, setStart] = useState(false);
+type TimerProps = {
+  initialTime: number;
+  setIsOngoingSession: (value: boolean) => void;
+  isOngoingSession: boolean;
+};
+
+export default function Timer({
+  initialTime,
+  setIsOngoingSession,
+  isOngoingSession
+}: TimerProps) {
+  const [time, setTime] = useState({ minutes: initialTime, seconds: 0 });
+
+  useEffect(() => {
+    setTime({ minutes: initialTime, seconds: 0 });
+  }, [initialTime]);
 
   useInterval(
     () => {
@@ -34,62 +46,61 @@ export default function Timer({ initialTime }: { initialTime: number }) {
       else
         setTime((prev) => ({
           minutes: prev.minutes,
-          seconds: prev.seconds - 1,
+          seconds: prev.seconds - 1
         }));
     },
-    start ? 1000 : null
+    isOngoingSession ? 1000 : null
   );
   const changeTime = (e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target || start) return;
+    if (!e.target || isOngoingSession) return;
 
     if (Number(e.target.value) > 60) return;
-    setChosenTime(Number(e.target.value));
     setTime({ minutes: Number(e.target.value), seconds: 0 });
   };
 
   const startTimer = () => {
-    setStart(true);
+    setIsOngoingSession(true);
   };
   const pauseTimer = () => {
-    setStart(false);
+    setIsOngoingSession(false);
   };
   const clearTimer = () => {
-    setStart(false);
-    setTime({ minutes: chosenTime, seconds: 0 });
+    setIsOngoingSession(false);
+    setTime({ minutes: initialTime, seconds: 0 });
   };
 
   return (
-    <div className="mx-auto space-y-4">
-      <div className="text-xl">{`${String(time.minutes).padStart(
+    <div className='mx-auto space-y-4'>
+      <div className='text-xl'>{`${String(time.minutes).padStart(
         2,
         "0"
       )}:${String(time.seconds).padStart(2, "0")}`}</div>
       <input
-        type="text"
-        value={chosenTime}
+        type='text'
+        value={initialTime}
         onChange={changeTime}
-        pattern="[0-9]{2}"
+        pattern='[0-9]{2}'
         maxLength={2}
       />
-      <div className="flex gap-3 ">
+      <div className='flex gap-3 '>
         <button
-          type="button"
+          type='button'
           onClick={startTimer}
-          className="py-3 px-1 bg-pink-500"
+          className='bg-pink-500 py-3 px-1'
         >
           Start
         </button>
         <button
-          type="button"
+          type='button'
           onClick={pauseTimer}
-          className="py-3 px-1 ring-pink-500 ring-1"
+          className='py-3 px-1 ring-1 ring-pink-500'
         >
           Pause
         </button>
         <button
-          type="button"
+          type='button'
           onClick={clearTimer}
-          className="py-3 px-1 text-pink-500"
+          className='py-3 px-1 text-pink-500'
         >
           Stop
         </button>
