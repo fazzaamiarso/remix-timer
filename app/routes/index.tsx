@@ -12,7 +12,7 @@ import Timer from "~/component/Timer";
 import { db } from "~/utils/prisma.server";
 
 export const loader: LoaderFunction = async () => {
-  const data = await db.task.findMany();
+  const data = await db.task.findMany({ orderBy: { createdAt: "asc" } });
   return data;
 };
 export const action: ActionFunction = async ({ request }) => {
