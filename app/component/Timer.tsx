@@ -1,25 +1,5 @@
-import { useRef, useEffect, ChangeEvent } from "react";
-
-function useInterval(callback: () => void, delay: null | number) {
-  const savedCallback = useRef<typeof callback>();
-
-  // Remember the latest callback.
-  useEffect(() => {
-    savedCallback.current = callback;
-  }, [callback]);
-
-  // Set up the interval.
-  useEffect(() => {
-    function tick() {
-      if (!savedCallback.current) return;
-      savedCallback.current();
-    }
-    if (delay !== null) {
-      let id = setInterval(tick, delay);
-      return () => clearInterval(id);
-    }
-  }, [delay]);
-}
+import { ChangeEvent } from "react";
+import { useInterval } from "~/hooks/use-interval";
 
 type setStateType<Type> = React.Dispatch<React.SetStateAction<Type>>;
 type TimerProps = {
@@ -32,6 +12,7 @@ type TimerProps = {
     seconds: number;
   }>;
   setTimeLapsed: setStateType<number>;
+  setInitialTime: setStateType<number>;
 };
 
 export default function Timer({
@@ -39,6 +20,7 @@ export default function Timer({
   timer,
   initialTime,
   setTimer,
+  setInitialTime,
   setIsOngoingSession,
   setTimeLapsed
 }: TimerProps) {
@@ -59,8 +41,8 @@ export default function Timer({
   const changeTime = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target || isOngoingSession) return;
 
-    if (Number(e.target.value) > 60) return;
     setTimer({ minutes: Number(e.target.value), seconds: 0 });
+    setInitialTime(Number(e.target.value));
   };
 
   const startTimer = () => {

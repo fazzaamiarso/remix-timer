@@ -60,7 +60,7 @@ export default function Index() {
     if (isOngoingSession && !confirm("Are you sure want to switch? Session will be reset")) return;
     setInitialTime(isBreak ? 10 : 25);
     setTimer({ minutes: isBreak ? 10 : 25, seconds: 0 });
-    setIsBreak(!isBreak);
+    setIsBreak((prev) => !prev);
     setIsOngoingSession(false);
   };
 
@@ -85,6 +85,7 @@ export default function Index() {
         timer={timer}
         setTimer={setTimer}
         setTimeLapsed={setTimeLapsed}
+        setInitialTime={setInitialTime}
       />
       <div className='mt-8'>
         <ul className='pb-4` space-y-4'>
@@ -157,7 +158,7 @@ function ListItem({
                   ? Date.now() - mountedTime.current
                   : timeLapsed)
             ),
-        isCompleted: e.target.value ? "on" : "",
+        isCompleted: isCompleted ? "" : "on",
         _action: "toggleTask"
       },
       {
@@ -166,6 +167,7 @@ function ListItem({
       }
     );
     if (isCompleted) mountedTime.current = Date.now();
+    else mountedTime.current = null;
   };
 
   return (
