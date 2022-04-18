@@ -21,25 +21,26 @@ function useInterval(callback: () => void, delay: null | number) {
   }, [delay]);
 }
 
+type setStateType<Type> = React.Dispatch<React.SetStateAction<Type>>;
 type TimerProps = {
-  setIsOngoingSession: (value: boolean) => void;
   isOngoingSession: boolean;
-  setTimer: React.Dispatch<
-    React.SetStateAction<{
-      minutes: number;
-      seconds: number;
-    }>
-  >;
   timer: { minutes: number; seconds: number };
   initialTime: number;
+  setIsOngoingSession: setStateType<boolean>;
+  setTimer: setStateType<{
+    minutes: number;
+    seconds: number;
+  }>;
+  setTimeLapsed: setStateType<number>;
 };
 
 export default function Timer({
-  setIsOngoingSession,
   isOngoingSession,
   timer,
+  initialTime,
   setTimer,
-  initialTime
+  setIsOngoingSession,
+  setTimeLapsed
 }: TimerProps) {
   useInterval(
     () => {
@@ -63,22 +64,26 @@ export default function Timer({
   };
 
   const startTimer = () => {
+    if (isOngoingSession) return;
     setIsOngoingSession(true);
+    setTimeLapsed(Date.now());
   };
   const pauseTimer = () => {
+    if (!isOngoingSession) return;
     setIsOngoingSession(false);
+    setTimeLapsed((prevTime) => Date.now() - prevTime);
   };
   const clearTimer = () => {
     setIsOngoingSession(false);
     setTimer({ minutes: initialTime, seconds: 0 });
+    setTimeLapsed((prevTime) => Date.now() - prevTime);
   };
 
   return (
     <div className='mx-auto space-y-4'>
-      <div className='text-xl'>{`${String(timer.minutes).padStart(
-        2,
-        "0"
-      )}:${String(timer.seconds).padStart(2, "0")}`}</div>
+      <div className='text-xl'>{`${String(timer.minutes).padStart(2, "0")}:${String(
+        timer.seconds
+      ).padStart(2, "0")}`}</div>
       <input
         type='text'
         value={initialTime}
@@ -87,25 +92,13 @@ export default function Timer({
         maxLength={2}
       />
       <div className='flex gap-3 '>
-        <button
-          type='button'
-          onClick={startTimer}
-          className='bg-pink-500 py-3 px-1'
-        >
+        <button type='button' onClick={startTimer} className='bg-pink-500 py-3 px-1'>
           Start
         </button>
-        <button
-          type='button'
-          onClick={pauseTimer}
-          className='py-3 px-1 ring-1 ring-pink-500'
-        >
+        <button type='button' onClick={pauseTimer} className='py-3 px-1 ring-1 ring-pink-500'>
           Pause
         </button>
-        <button
-          type='button'
-          onClick={clearTimer}
-          className='py-3 px-1 text-pink-500'
-        >
+        <button type='button' onClick={clearTimer} className='py-3 px-1 text-pink-500'>
           Stop
         </button>
       </div>
