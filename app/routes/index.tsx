@@ -39,21 +39,31 @@ export const action: ActionFunction = async ({ request }) => {
   }
 };
 
+//TODO: move to persisted storage
+const USER_PREF = {
+  workTime: 25,
+  breakTime: 10
+};
+
+const mergeClassNames = (...classNames: string[]) => {
+  return classNames.filter(Boolean).join(" ");
+};
+
 export default function Index() {
-  const [isBreak, setIsBreak] = useState(false);
+  const [isBreak, setIsBreak] = useState(false); //switch to state machine approach, maybe?
   const inputRef = useRef<HTMLInputElement>(null);
   const transition = useTransition();
   const tasks = useLoaderData<Task[]>();
 
   const [isOngoingSession, setIsOngoingSession] = useState(false);
-  const [timer, setTimer] = useState({ minutes: 25, seconds: 0 });
-  const [initialTime, setInitialTime] = useState(25);
+  const [timer, setTimer] = useState({ minutes: USER_PREF.workTime, seconds: 0 });
+  const [initialTime, setInitialTime] = useState(USER_PREF.workTime);
   const [timeLapsed, setTimeLapsed] = useState(0);
 
   const toggleBreak = () => {
     if (isOngoingSession && !confirm("Are you sure want to switch? Session will be reset")) return;
-    setInitialTime(isBreak ? 10 : 25);
-    setTimer({ minutes: isBreak ? 10 : 25, seconds: 0 });
+    setInitialTime(isBreak ? USER_PREF.breakTime : USER_PREF.workTime);
+    setTimer({ minutes: isBreak ? USER_PREF.breakTime : USER_PREF.workTime, seconds: 0 });
     setIsBreak((prev) => !prev);
     setIsOngoingSession(false);
   };
@@ -120,17 +130,30 @@ type ListItemProps = {
   completionTime: number;
   isWorkSession: boolean;
 };
-function ListItem({ id: taskId, taskName, isCompleted, completionTime, timeLapsed, isWorkSession }: ListItemProps) {
+function ListItem({
+  id: taskId,
+  taskName,
+  isCompleted,
+  completionTime,
+  timeLapsed: timerTimeLapsed,
+  isWorkSession
+}: ListItemProps) {
   const itemFetcher = useFetcher();
   const mountedTime = useRef<number | null>(null);
   const editRef = useRef<HTMLInputElement>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const hadToggleOnTimerStop = useRef(false);
 
   useEffect(() => {
-    if (isWorkSession || itemFetcher.submission?.formData.get("_action") === "toggleTask")
-      mountedTime.current = Date.now();
-  }, [isWorkSession, itemFetcher.submission?.formData]);
+    if (isWorkSession) hadToggleOnTimerStop.current = false;
 
+    if (!isWorkSession && isCompleted) mountedTime.current = null;
+    if (isWorkSession && isCompleted) mountedTime.current = null;
+    if (!isWorkSession && !isCompleted) mountedTime.current = hadToggleOnTimerStop ? null : Date.now();
+    if (isWorkSession && !isCompleted) mountedTime.current = Date.now();
+  }, [isWorkSession, isCompleted]);
+
+  //use Count rather than boolean
   useEffect(() => {
     if (itemFetcher.submission?.formData.get("_action") === "edit") {
       setIsEditing(false);
@@ -143,14 +166,18 @@ function ListItem({ id: taskId, taskName, isCompleted, completionTime, timeLapse
 
   const toggleCompleted = (e: ChangeEvent<HTMLFormElement>) => {
     if (e.target.id !== taskId) return;
+
+    const internalElapsedTime = mountedTime.current ? Date.now() - mountedTime.current : 0;
+    const elapsedTime = hadToggleOnTimerStop.current
+      ? String(completionTime)
+      : isWorkSession
+      ? String(completionTime + internalElapsedTime)
+      : String(completionTime + timerTimeLapsed);
+
     itemFetcher.submit(
       {
         taskId,
-        elapsedTime: isCompleted
-          ? String(completionTime)
-          : String(
-              completionTime + (isWorkSession && mountedTime.current ? Date.now() - mountedTime.current : timeLapsed)
-            ),
+        elapsedTime,
         isCompleted: isCompleted ? "" : "on",
         _action: "toggleTask"
       },
@@ -159,8 +186,7 @@ function ListItem({ id: taskId, taskName, isCompleted, completionTime, timeLapse
         method: "post"
       }
     );
-    if (isCompleted) mountedTime.current = Date.now();
-    else mountedTime.current = null;
+    if (!isWorkSession && !isCompleted) hadToggleOnTimerStop.current = true;
   };
 
   return (
@@ -170,10 +196,10 @@ function ListItem({ id: taskId, taskName, isCompleted, completionTime, timeLapse
         {isEditing ? (
           <>
             <input type='text' defaultValue={taskName} name='editedTask' ref={editRef} />
-            <button className=' rounded-sm px-2 ring ring-blue-600' type='button' onClick={() => setIsEditing(false)}>
+            <button className=' rounded-sm px-2 ring-1 ring-blue-600' type='button' onClick={() => setIsEditing(false)}>
               Cancel
             </button>
-            <button className=' rounded-sm px-2 ring ring-blue-600' name='_action' value='edit' type='submit'>
+            <button className=' rounded-sm bg-blue-600 px-2 text-white ' name='_action' value='edit' type='submit'>
               Save
             </button>
           </>
@@ -197,6 +223,7 @@ function ListItem({ id: taskId, taskName, isCompleted, completionTime, timeLapse
           </>
         )}
         <div>{completionTime}</div>
+        <div>{new Date(completionTime).getSeconds()}</div>
       </itemFetcher.Form>
     </li>
   );
