@@ -5,6 +5,7 @@ import { Form, useFetcher, useLoaderData, useTransition } from "@remix-run/react
 import { useRef, useState, useEffect, ChangeEvent } from "react";
 import Timer from "~/component/Timer";
 import { db } from "~/utils/prisma.server";
+import { createTask, deleteTask, editTask, toggleTask } from "~/utils/task.server";
 
 export const loader: LoaderFunction = async () => {
   const data = await db.task.findMany({ orderBy: { createdAt: "asc" } });
@@ -13,36 +14,29 @@ export const loader: LoaderFunction = async () => {
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const newTask = formData.get("task");
+  const editedTask = formData.get("editedTask");
   const taskId = formData.get("taskId");
   const actionType = formData.get("_action");
   const isCompleted = Boolean(formData.get("isCompleted"));
   const elapsedTime = Number(formData.get("elapsedTime"));
 
-  if (actionType && typeof actionType !== "string")
-    return json({ message: "Action not allowed!" }, 405);
-  if (taskId && typeof taskId !== "string") return json({ message: "Task Id not a string" }, 400);
-  if (actionType === "delete" && taskId)
-    return await db.task.delete({
-      where: {
-        id: taskId
-      }
-    });
-  if (actionType === "toggleTask" && taskId)
-    return await db.task.update({
-      where: {
-        id: taskId
-      },
-      data: { completionTime: elapsedTime, isCompleted }
-    });
+  if (typeof actionType !== "string") return json({ message: "Action is not a string" }, 400);
+  if (taskId && typeof taskId !== "string") return json({ message: "TaskId is not a string" }, 400);
+  if (editedTask && typeof editedTask !== "string") return json({ message: "EditedTask is not a string" }, 400);
 
-  if (!newTask || typeof newTask !== "string")
-    return json({ message: "Please insert a task!" }, 400);
-
-  return await db.task.create({
-    data: {
-      taskName: newTask
-    }
-  });
+  switch (actionType) {
+    case "create":
+      if (typeof newTask !== "string") return json({ message: "Please insert a task!" }, 400);
+      return await createTask(newTask);
+    case "delete":
+      if (taskId) return await deleteTask(taskId);
+    case "toggleTask":
+      if (taskId) return await toggleTask(taskId, elapsedTime, isCompleted);
+    case "edit":
+      if (taskId && editedTask) return await editTask(taskId, editedTask);
+    default:
+      throw new Error(`Unhandled action: ${actionType}`);
+  }
 };
 
 export default function Index() {
@@ -70,7 +64,7 @@ export default function Index() {
       inputRef.current.value = "";
       inputRef.current.focus();
     }
-  }, [transition]);
+  }, [transition.type]);
 
   return (
     <div className='mx-auto w-10/12 max-w-lg py-4'>
@@ -109,14 +103,10 @@ export default function Index() {
         </ul>
         <Form method='post' className='flex gap-2'>
           <input ref={inputRef} type='text' id='task' name='task' aria-label='task' required />
-          <button type='submit' className='bg-pink-600 px-2 font-semibold text-white'>
+          <button type='submit' name='_action' value='create' className='bg-pink-600 px-2 font-semibold text-white'>
             Add task
           </button>
         </Form>
-      </div>
-      <div>elapsedTime: {timeLapsed}</div>
-      <div>
-        {new Date(timeLapsed).getMinutes()}:{new Date(timeLapsed).getSeconds()}
       </div>
     </div>
   );
@@ -130,33 +120,36 @@ type ListItemProps = {
   completionTime: number;
   isWorkSession: boolean;
 };
-function ListItem({
-  id: taskId,
-  taskName,
-  isCompleted,
-  completionTime,
-  timeLapsed,
-  isWorkSession
-}: ListItemProps) {
+function ListItem({ id: taskId, taskName, isCompleted, completionTime, timeLapsed, isWorkSession }: ListItemProps) {
   const itemFetcher = useFetcher();
   const mountedTime = useRef<number | null>(null);
+  const editRef = useRef<HTMLInputElement>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (isWorkSession || itemFetcher.submission?.formData.get("_action") === "toggleTask")
       mountedTime.current = Date.now();
   }, [isWorkSession, itemFetcher.submission?.formData]);
 
+  useEffect(() => {
+    if (itemFetcher.submission?.formData.get("_action") === "edit") {
+      setIsEditing(false);
+    }
+  }, [itemFetcher.submission]);
+
+  useEffect(() => {
+    if (isEditing) editRef.current?.focus();
+  }, [isEditing]);
+
   const toggleCompleted = (e: ChangeEvent<HTMLFormElement>) => {
+    if (e.target.id !== taskId) return;
     itemFetcher.submit(
       {
         taskId,
         elapsedTime: isCompleted
           ? String(completionTime)
           : String(
-              completionTime +
-                (isWorkSession && mountedTime.current
-                  ? Date.now() - mountedTime.current
-                  : timeLapsed)
+              completionTime + (isWorkSession && mountedTime.current ? Date.now() - mountedTime.current : timeLapsed)
             ),
         isCompleted: isCompleted ? "" : "on",
         _action: "toggleTask"
@@ -173,19 +166,36 @@ function ListItem({
   return (
     <li>
       <itemFetcher.Form method='post' className='flex gap-2' onChange={toggleCompleted}>
-        <input type='checkbox' id={taskId} name='isCompleted' defaultChecked={isCompleted} />
-        <label htmlFor={taskId}>{taskName}</label>
         <input type='text' hidden name='taskId' defaultValue={taskId} />
-        <button
-          className={`rounded-sm bg-red-600 px-2 text-white ${
-            itemFetcher.submission?.formData.get("_action") === "delete" ? "opacity-60" : ""
-          }`}
-          name='_action'
-          value='delete'
-          type='submit'
-        >
-          Delete
-        </button>
+        {isEditing ? (
+          <>
+            <input type='text' defaultValue={taskName} name='editedTask' ref={editRef} />
+            <button className=' rounded-sm px-2 ring ring-blue-600' type='button' onClick={() => setIsEditing(false)}>
+              Cancel
+            </button>
+            <button className=' rounded-sm px-2 ring ring-blue-600' name='_action' value='edit' type='submit'>
+              Save
+            </button>
+          </>
+        ) : (
+          <>
+            <input type='checkbox' id={taskId} name='isCompleted' defaultChecked={isCompleted} />
+            <label htmlFor={taskId}>{taskName}</label>
+            <button
+              className={`rounded-sm bg-red-600 px-2 text-white ${
+                itemFetcher.submission?.formData.get("_action") === "delete" ? "opacity-60" : ""
+              }`}
+              name='_action'
+              value='delete'
+              type='submit'
+            >
+              Delete
+            </button>
+            <button className='rounded-sm bg-blue-600 px-2 text-white' type='button' onClick={() => setIsEditing(true)}>
+              Edit
+            </button>
+          </>
+        )}
         <div>{completionTime}</div>
       </itemFetcher.Form>
     </li>
