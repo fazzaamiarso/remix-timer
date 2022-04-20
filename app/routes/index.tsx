@@ -1,3 +1,4 @@
+import { Tab } from "@headlessui/react";
 import type { Task } from "@prisma/client";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
@@ -49,23 +50,27 @@ const mergeClassNames = (...classNames: string[]) => {
   return classNames.filter(Boolean).join(" ");
 };
 
+export type TimerState = "idle" | "paused" | "running" | "init";
+
 export default function Index() {
   const [isBreak, setIsBreak] = useState(false); //switch to state machine approach, maybe?
   const inputRef = useRef<HTMLInputElement>(null);
   const transition = useTransition();
   const tasks = useLoaderData<Task[]>();
 
-  const [isOngoingSession, setIsOngoingSession] = useState(false);
+  const [timerState, setTimerState] = useState<TimerState>("init");
   const [timer, setTimer] = useState({ minutes: USER_PREF.workTime, seconds: 0 });
-  const [initialTime, setInitialTime] = useState(USER_PREF.workTime);
-  const [timeLapsed, setTimeLapsed] = useState(0);
+  const [timerCaptured, setTimerCaptured] = useState({ start: 0, stop: 0 });
 
-  const toggleBreak = () => {
-    if (isOngoingSession && !confirm("Are you sure want to switch? Session will be reset")) return;
-    setInitialTime(isBreak ? USER_PREF.breakTime : USER_PREF.workTime);
-    setTimer({ minutes: isBreak ? USER_PREF.breakTime : USER_PREF.workTime, seconds: 0 });
-    setIsBreak((prev) => !prev);
-    setIsOngoingSession(false);
+  // const toggleBreak = () => {
+  //   if (timerState === "running" && !confirm("Are you sure want to switch? Session will be reset")) return;
+  //   setTimer({ minutes: isBreak ? USER_PREF.breakTime : USER_PREF.workTime, seconds: 0 });
+  //   setIsBreak((prev) => !prev);
+  //   setTimerState("idle");
+  // };
+
+  const changeTab = (selectedIdx: number) => {
+    return;
   };
 
   useEffect(() => {
@@ -78,20 +83,37 @@ export default function Index() {
 
   return (
     <div className='mx-auto w-10/12 max-w-lg py-4'>
-      <h1 className='text-2xl font-bold text-red-700'>Welcome to Remix Timer</h1>
-      <button onClick={toggleBreak} className='rounded-md bg-blue-500 py-2 font-bold'>
-        {isBreak ? "Study" : "Break"}
-      </button>
-      <Timer
-        setIsOngoingSession={setIsOngoingSession}
-        isOngoingSession={isOngoingSession}
-        initialTime={initialTime}
-        timer={timer}
-        setTimer={setTimer}
-        setTimeLapsed={setTimeLapsed}
-        setInitialTime={setInitialTime}
-      />
-      <div className='mt-8'>
+      <h1 className='mb-6 text-2xl font-bold text-red-700'>Welcome to Remix Timer</h1>
+      <Tab.Group onChange={changeTab}>
+        <Tab.List className='flex w-max gap-4 rounded-md bg-gray-200 px-4 py-1'>
+          <Tab className='font-semibold'>Study</Tab>
+          <Tab className='font-semibold'>Break</Tab>
+        </Tab.List>
+        <Tab.Panels>
+          <Tab.Panel>
+            <Timer
+              setTimerState={setTimerState}
+              timerState={timerState}
+              initialTime={USER_PREF.workTime}
+              timer={timer}
+              setTimer={setTimer}
+              setTimerCaptured={setTimerCaptured}
+            />
+          </Tab.Panel>
+          <Tab.Panel>
+            <Timer
+              setTimerState={setTimerState}
+              timerState={timerState}
+              initialTime={USER_PREF.breakTime}
+              timer={timer}
+              setTimer={setTimer}
+              setTimerCaptured={setTimerCaptured}
+            />
+          </Tab.Panel>
+        </Tab.Panels>
+      </Tab.Group>
+
+      <div className='mt-12 space-y-6'>
         <ul className='pb-4` space-y-4'>
           {tasks.length ? (
             tasks.map((task) => {
@@ -102,8 +124,9 @@ export default function Index() {
                   taskName={task.taskName}
                   isCompleted={task.isCompleted}
                   completionTime={task.completionTime}
-                  timeLapsed={timeLapsed}
-                  isWorkSession={isOngoingSession && !isBreak}
+                  timerState={timerState}
+                  timerCaptured={timerCaptured}
+                  isBreak={isBreak}
                 />
               );
             })
@@ -126,34 +149,32 @@ type ListItemProps = {
   id: string;
   taskName: string;
   isCompleted: boolean;
-  timeLapsed: number;
+  timerCaptured: { start: number; stop: number };
   completionTime: number;
-  isWorkSession: boolean;
+  timerState: TimerState;
+  isBreak: boolean;
 };
 function ListItem({
   id: taskId,
   taskName,
   isCompleted,
   completionTime,
-  timeLapsed: timerTimeLapsed,
-  isWorkSession
+  timerCaptured,
+  timerState,
+  isBreak
 }: ListItemProps) {
   const itemFetcher = useFetcher();
-  const mountedTime = useRef<number | null>(null);
+  const mountedTime = useRef<number>(0);
   const editRef = useRef<HTMLInputElement>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const hadToggleOnTimerStop = useRef(false);
+  const toggleOnStopCount = useRef(0);
 
   useEffect(() => {
-    if (isWorkSession) hadToggleOnTimerStop.current = false;
+    if (timerState === "running") toggleOnStopCount.current = 0;
+    if (!isCompleted) mountedTime.current = Date.now();
+    if (isCompleted) mountedTime.current = 0;
+  }, [isCompleted, timerState]);
 
-    if (!isWorkSession && isCompleted) mountedTime.current = null;
-    if (isWorkSession && isCompleted) mountedTime.current = null;
-    if (!isWorkSession && !isCompleted) mountedTime.current = hadToggleOnTimerStop ? null : Date.now();
-    if (isWorkSession && !isCompleted) mountedTime.current = Date.now();
-  }, [isWorkSession, isCompleted]);
-
-  //use Count rather than boolean
   useEffect(() => {
     if (itemFetcher.submission?.formData.get("_action") === "edit") {
       setIsEditing(false);
@@ -165,30 +186,48 @@ function ListItem({
   }, [isEditing]);
 
   const toggleCompleted = (e: ChangeEvent<HTMLFormElement>) => {
-    if (e.target.id !== taskId) return;
+    if (e.target.id !== taskId || isBreak) return;
 
-    const internalElapsedTime = mountedTime.current ? Date.now() - mountedTime.current : 0;
-    const elapsedTime = hadToggleOnTimerStop.current
-      ? String(completionTime)
-      : isWorkSession
-      ? String(completionTime + internalElapsedTime)
-      : String(completionTime + timerTimeLapsed);
-
-    itemFetcher.submit(
-      {
-        taskId,
-        elapsedTime,
-        isCompleted: isCompleted ? "" : "on",
-        _action: "toggleTask"
-      },
-      {
-        replace: true,
-        method: "post"
-      }
-    );
-    if (!isWorkSession && !isCompleted) hadToggleOnTimerStop.current = true;
+    const timeWhenClicked = Date.now();
+    if (timerState === "running")
+      return itemFetcher.submit(
+        {
+          taskId,
+          elapsedTime: isCompleted
+            ? String(completionTime)
+            : String(completionTime + (timeWhenClicked - mountedTime.current)),
+          isCompleted: isCompleted ? "" : "on",
+          _action: "toggleTask"
+        },
+        {
+          replace: true,
+          method: "post"
+        }
+      );
+    //TODO: Still has 1 bug
+    if (timerState === "paused") {
+      itemFetcher.submit(
+        {
+          taskId,
+          elapsedTime:
+            toggleOnStopCount.current > 0 || isCompleted
+              ? String(completionTime)
+              : String(
+                  completionTime +
+                    (timerCaptured.stop -
+                      (timerCaptured.stop > mountedTime.current ? mountedTime.current : timerCaptured.start))
+                ),
+          isCompleted: isCompleted ? "" : "on",
+          _action: "toggleTask"
+        },
+        {
+          replace: true,
+          method: "post"
+        }
+      );
+      toggleOnStopCount.current = isCompleted ? toggleOnStopCount.current : toggleOnStopCount.current + 1;
+    }
   };
-
   return (
     <li>
       <itemFetcher.Form method='post' className='flex gap-2' onChange={toggleCompleted}>
@@ -223,7 +262,9 @@ function ListItem({
           </>
         )}
         <div>{completionTime}</div>
-        <div>{new Date(completionTime).getSeconds()}</div>
+        <div>
+          {new Date(completionTime).getMinutes()}:{new Date(completionTime).getSeconds()}
+        </div>
       </itemFetcher.Form>
     </li>
   );
