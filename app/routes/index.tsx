@@ -59,18 +59,11 @@ export default function Index() {
   const tasks = useLoaderData<Task[]>();
 
   const [timerState, setTimerState] = useState<TimerState>("init");
-  const [timer, setTimer] = useState({ minutes: USER_PREF.workTime, seconds: 0 });
   const [timerCaptured, setTimerCaptured] = useState({ start: 0, stop: 0 });
 
-  // const toggleBreak = () => {
-  //   if (timerState === "running" && !confirm("Are you sure want to switch? Session will be reset")) return;
-  //   setTimer({ minutes: isBreak ? USER_PREF.breakTime : USER_PREF.workTime, seconds: 0 });
-  //   setIsBreak((prev) => !prev);
-  //   setTimerState("idle");
-  // };
-
-  const changeTab = (selectedIdx: number) => {
-    return;
+  const changeTab = (currentTabIdx: number) => {
+    //TODO: Need confirmation if timer running
+    setIsBreak(currentTabIdx === 1);
   };
 
   useEffect(() => {
@@ -82,12 +75,24 @@ export default function Index() {
   }, [transition.type]);
 
   return (
-    <div className='mx-auto w-10/12 max-w-lg py-4'>
+    <div className='mx-auto w-10/12 max-w-lg py-4 '>
       <h1 className='mb-6 text-2xl font-bold text-red-700'>Welcome to Remix Timer</h1>
       <Tab.Group onChange={changeTab}>
-        <Tab.List className='flex w-max gap-4 rounded-md bg-gray-200 px-4 py-1'>
-          <Tab className='font-semibold'>Study</Tab>
-          <Tab className='font-semibold'>Break</Tab>
+        <Tab.List className='mx-auto flex w-full max-w-sm justify-center gap-4 rounded-md bg-gray-200 px-1  py-1'>
+          <Tab
+            className={({ selected }) =>
+              mergeClassNames("w-full rounded-md px-3 font-semibold", selected ? "bg-white" : "")
+            }
+          >
+            Study
+          </Tab>
+          <Tab
+            className={({ selected }) =>
+              mergeClassNames("w-full rounded-md px-3 font-semibold", selected ? "bg-white" : "")
+            }
+          >
+            Break
+          </Tab>
         </Tab.List>
         <Tab.Panels>
           <Tab.Panel>
@@ -95,8 +100,6 @@ export default function Index() {
               setTimerState={setTimerState}
               timerState={timerState}
               initialTime={USER_PREF.workTime}
-              timer={timer}
-              setTimer={setTimer}
               setTimerCaptured={setTimerCaptured}
             />
           </Tab.Panel>
@@ -105,16 +108,14 @@ export default function Index() {
               setTimerState={setTimerState}
               timerState={timerState}
               initialTime={USER_PREF.breakTime}
-              timer={timer}
-              setTimer={setTimer}
               setTimerCaptured={setTimerCaptured}
             />
           </Tab.Panel>
         </Tab.Panels>
       </Tab.Group>
 
-      <div className='mt-12 space-y-6'>
-        <ul className='pb-4` space-y-4'>
+      <div className='mt-20 space-y-6'>
+        <ul className='space-y-8 pb-4'>
           {tasks.length ? (
             tasks.map((task) => {
               return (
@@ -261,10 +262,10 @@ function ListItem({
             </button>
           </>
         )}
-        <div>{completionTime}</div>
+        {/* <div>{completionTime}</div>
         <div>
           {new Date(completionTime).getMinutes()}:{new Date(completionTime).getSeconds()}
-        </div>
+        </div> */}
       </itemFetcher.Form>
     </li>
   );

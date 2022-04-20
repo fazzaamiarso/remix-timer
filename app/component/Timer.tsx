@@ -1,27 +1,19 @@
+import { useState } from "react";
 import { useInterval } from "~/hooks/use-interval";
 import { TimerState } from "~/routes";
 
 type setStateType<Type> = React.Dispatch<React.SetStateAction<Type>>;
 type TimerProps = {
-  timer: { minutes: number; seconds: number };
   initialTime: number;
   timerState: TimerState;
   setTimerState: setStateType<TimerState>;
-  setTimer: setStateType<{
-    minutes: number;
-    seconds: number;
-  }>;
+
   setTimerCaptured: setStateType<{ start: number; stop: number }>;
 };
 
-export default function Timer({
-  timerState,
-  timer,
-  initialTime,
-  setTimer,
-  setTimerState,
-  setTimerCaptured
-}: TimerProps) {
+export default function Timer({ timerState, initialTime, setTimerState, setTimerCaptured }: TimerProps) {
+  const [timer, setTimer] = useState({ minutes: initialTime, seconds: 0 });
+
   useInterval(
     () => {
       if (timer.seconds === 0 && timer.minutes === 0) return clearTimer();
@@ -52,8 +44,8 @@ export default function Timer({
   };
 
   return (
-    <div className='mx-auto my-4 space-y-4'>
-      <div className='text-xl'>{`${String(timer.minutes).padStart(2, "0")}:${String(timer.seconds).padStart(
+    <div className='mx-auto my-8 flex flex-col items-center space-y-8'>
+      <div className='text-7xl font-bold'>{`${String(timer.minutes).padStart(2, "0")}:${String(timer.seconds).padStart(
         2,
         "0"
       )}`}</div>
