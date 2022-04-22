@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useInterval } from "~/hooks/use-interval";
 import { TimerState } from "~/routes";
+import { mergeClassNames } from "~/utils/client";
 
 type setStateType<Type> = React.Dispatch<React.SetStateAction<Type>>;
 type TimerProps = {
   initialTime: number;
   timerState: TimerState;
   setTimerState: setStateType<TimerState>;
-
   setTimerCaptured: setStateType<{ start: number; stop: number }>;
 };
 
@@ -27,20 +27,20 @@ export default function Timer({ timerState, initialTime, setTimerState, setTimer
     timerState === "running" ? 1000 : null
   );
 
-  const startTimer = () => {
-    if (timerState === "running") return;
-    setTimerState("running");
-    setTimerCaptured({ start: Date.now(), stop: 0 });
-  };
-  const pauseTimer = () => {
-    if (timerState === "paused" || timerState === "idle") return;
-    setTimerState("paused");
-    setTimerCaptured((prev) => ({ ...prev, stop: Date.now() }));
-  };
   const clearTimer = () => {
     setTimerState("idle");
     setTimer({ minutes: initialTime, seconds: 0 });
     setTimerCaptured({ start: 0, stop: 0 });
+  };
+
+  const toggleTimer = () => {
+    if (timerState === "running") {
+      setTimerState("paused");
+      setTimerCaptured((prev) => ({ ...prev, stop: Date.now() }));
+      return;
+    }
+    setTimerState("running");
+    setTimerCaptured({ start: Date.now(), stop: 0 });
   };
 
   return (
@@ -50,14 +50,22 @@ export default function Timer({ timerState, initialTime, setTimerState, setTimer
         "0"
       )}`}</div>
       <div className='flex gap-3 '>
-        <button type='button' onClick={startTimer} className='bg-pink-500 py-3 px-1'>
-          Start
+        <button
+          type='button'
+          onClick={toggleTimer}
+          className={mergeClassNames(
+            " group relative rounded-md bg-red-400 px-6 py-3 font-semibold text-white active:translate-y-1"
+          )}
+        >
+          {timerState === "running" ? "Pause" : "Play"}
+          <span className='absolute inset-0 -z-10 translate-y-1 rounded-md bg-gray-300 group-active:hidden' />
         </button>
-        <button type='button' onClick={pauseTimer} className='py-3 px-1 ring-1 ring-pink-500'>
-          Pause
-        </button>
-        <button type='button' onClick={clearTimer} className='py-3 px-1 text-pink-500'>
-          Stop
+        <button
+          type='button'
+          onClick={clearTimer}
+          className={mergeClassNames("py-3 px-1 font-semibold", timerState === "running" ? "" : "invisible")}
+        >
+          Reset
         </button>
       </div>
     </div>
