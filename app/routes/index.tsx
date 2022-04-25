@@ -58,8 +58,16 @@ export default function Index() {
   const [timerCaptured, setTimerCaptured] = useState({ start: 0, stop: 0 });
   const [selectedTabIdx, setSelectedTabIdx] = useState(0);
 
+  let hadBeenCalled = false;
   const changeTab = (currentTabIdx: number) => {
-    if (timerState === "running" && !confirm("Are you sure want to end the session? Timer will be reset.")) return; //change to dialog, because using confirm cause bug
+    if (
+      timerState === "running" &&
+      !hadBeenCalled &&
+      !confirm("Are you sure want to end the session? Timer will be reset.")
+    ) {
+      hadBeenCalled = true; // Have to keep track of the function call because there is a bug where this handler will be called multiple time after cancelling. Maybe because of the timer immediately change the state?
+      return;
+    }
     setIsBreak(currentTabIdx === 1);
     setSelectedTabIdx(currentTabIdx);
     setTimerState("idle");
