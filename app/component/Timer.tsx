@@ -45,22 +45,21 @@ export default function Timer({ timerState, initialTime, setTimerState, setTimer
 
   return (
     <div className='mx-auto my-8 flex flex-col items-center space-y-8'>
-      <div className='text-7xl font-bold'>{`${String(timer.minutes).padStart(2, "0")}:${String(timer.seconds).padStart(
-        2,
-        "0"
-      )}`}</div>
+      <div className='text-7xl font-bold text-white'>{`${String(timer.minutes).padStart(2, "0")}:${String(
+        timer.seconds
+      ).padStart(2, "0")}`}</div>
       <div className='flex gap-3 '>
         <button
           type='button'
           onClick={toggleTimer}
           className={mergeClassNames(
-            " group relative rounded-md bg-red-400 px-6 py-3 font-semibold text-white active:translate-y-1"
+            " group relative rounded-md bg-[#3C7AAE] px-6 py-3 font-semibold text-white active:translate-y-1"
           )}
         >
           {timerState === "running" ? "Pause" : "Play"}
           <span className='absolute inset-0 -z-10 translate-y-1 rounded-md bg-gray-300 group-active:hidden' />
         </button>
-        <button type='button' onClick={clearTimer} className={mergeClassNames("py-3 px-1 font-semibold")}>
+        <button type='button' onClick={clearTimer} className={mergeClassNames("py-3 px-1 font-semibold text-white")}>
           {timerState === "running" ? "End" : timerState === "paused" ? "Reset" : ""}
         </button>
       </div>

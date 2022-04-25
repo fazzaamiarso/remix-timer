@@ -75,13 +75,13 @@ export default function Index() {
 
   return (
     <div className='mx-auto w-10/12 max-w-lg py-4 '>
-      <h1 className='mb-6 text-2xl font-bold text-red-700'>Welcome to Remix Timer</h1>
+      <h1 className='sr-only'>Welcome to Remix Timer</h1>
       <Tab.Group selectedIndex={selectedTabIdx} onChange={changeTab}>
-        <Tab.List className='mx-auto flex w-full max-w-sm justify-center gap-4 rounded-md bg-gray-200 px-1  py-1'>
+        <Tab.List className='mx-auto flex w-full max-w-sm justify-center gap-4 rounded-md bg-[#272851] px-1  py-1'>
           <Tab
             type='button'
             className={({ selected }) =>
-              mergeClassNames("w-full rounded-md px-3 font-semibold", selected ? "bg-white" : "")
+              mergeClassNames("w-full rounded-md px-3 font-semibold text-white", selected ? "bg-[#43446A]" : "")
             }
           >
             Study
@@ -89,7 +89,7 @@ export default function Index() {
           <Tab
             type='button'
             className={({ selected }) =>
-              mergeClassNames("w-full rounded-md px-3 font-semibold", selected ? "bg-white" : "")
+              mergeClassNames("w-full rounded-md px-3 font-semibold text-white", selected ? "bg-[#43446A]" : "")
             }
           >
             Break
@@ -114,7 +114,7 @@ export default function Index() {
           </Tab.Panel>
         </Tab.Panels>
       </Tab.Group>
-      <div className='mt-20 space-y-6'>
+      <div className='mt-20'>
         <ul className='space-y-4 pb-4'>
           {tasks.length ? (
             tasks.map((task) => {
@@ -159,12 +159,20 @@ function TaskForm() {
   }, [transition.type]);
 
   return (
-    <Form method='post' className=''>
+    <Form method='post' className={mergeClassNames("rounded-md ", isOpen ? "bg-[#43446A] p-4" : "")}>
       {isOpen ? (
         <div className='flex flex-col gap-4'>
-          <input ref={inputRef} type='text' id='task' name='task' aria-label='task' required className='w-full' />
+          <input
+            ref={inputRef}
+            type='text'
+            id='task'
+            name='task'
+            aria-label='task'
+            required
+            className='w-full rounded-md bg-[#272851] text-white focus:border-white'
+          />
           <div className='flex gap-2 self-end'>
-            <button type='button' onClick={() => setIsOpen(false)} className='rounded-md px-2 py-1 ring-1  ring-black'>
+            <button type='button' onClick={() => setIsOpen(false)} className='rounded-md px-2 py-1 ring-1  ring-white'>
               Cancel
             </button>
             <button
@@ -181,7 +189,7 @@ function TaskForm() {
         <button
           type='button'
           onClick={() => setIsOpen(true)}
-          className='w-full rounded-md border-2 border-dashed border-slate-500 px-1 py-2 font-semibold hover:opacity-90'
+          className='w-full rounded-md border-2 border-dashed border-white  px-1 py-2 font-semibold text-white hover:opacity-90'
         >
           Add task
         </button>

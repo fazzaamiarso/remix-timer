@@ -104,13 +104,19 @@ export function TaskItem({
     <li>
       <itemFetcher.Form
         method='post'
-        className='flex justify-between gap-2 rounded-md bg-gray-200 p-4 '
+        className='flex justify-between gap-2 rounded-md bg-[#43446A] p-4 text-white'
         onChange={toggleCompleted}
       >
         <input type='text' hidden name='taskId' defaultValue={taskId} />
         {isEditing ? (
-          <div className='flex w-full flex-col gap-2'>
-            <input type='text' defaultValue={taskName} name='editedTask' ref={editRef} className='w-full' />
+          <div className='flex w-full flex-col gap-4'>
+            <input
+              type='text'
+              defaultValue={taskName}
+              name='editedTask'
+              ref={editRef}
+              className='w-full rounded-md bg-[#272851] text-white focus:border-white'
+            />
             <div className='flex gap-2 self-end'>
               <button
                 className=' rounded-sm px-2 ring-1 ring-blue-600'

@@ -1,12 +1,5 @@
 import type { MetaFunction } from "@remix-run/node";
-import {
-  Links,
-  LiveReload,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-} from "@remix-run/react";
+import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/react";
 import styles from "./styles/app.css";
 
 export function links() {
@@ -15,17 +8,17 @@ export function links() {
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
   title: "Remix Timer",
-  viewport: "width=device-width,initial-scale=1",
+  viewport: "width=device-width,initial-scale=1"
 });
 
 export default function App() {
   return (
-    <html lang="en">
+    <html lang='en'>
       <head>
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className='bg-primary'>
         <Outlet />
         <ScrollRestoration />
         <Scripts />
