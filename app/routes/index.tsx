@@ -2,8 +2,9 @@ import { Tab } from "@headlessui/react";
 import type { Task } from "@prisma/client";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Form, useFetcher, useLoaderData, useTransition } from "@remix-run/react";
-import { useRef, useState, useEffect, ChangeEvent, ReactNode } from "react";
+import { Form, useLoaderData, useTransition } from "@remix-run/react";
+import { useRef, useState, useEffect } from "react";
+import { TaskItem } from "~/component/TaskItem";
 import Timer from "~/component/Timer";
 import { mergeClassNames } from "~/utils/client";
 import { db } from "~/utils/prisma.server";
@@ -58,7 +59,7 @@ export default function Index() {
   const [selectedTabIdx, setSelectedTabIdx] = useState(0);
 
   const changeTab = (currentTabIdx: number) => {
-    if (timerState === "running" && !confirm("Are you sure want to end the session? Timer will be reset.")) return;
+    if (timerState === "running" && !confirm("Are you sure want to end the session? Timer will be reset.")) return; //change to dialog, because using confirm cause bug
     setIsBreak(currentTabIdx === 1);
     setSelectedTabIdx(currentTabIdx);
     setTimerState("idle");
@@ -70,6 +71,7 @@ export default function Index() {
       <Tab.Group selectedIndex={selectedTabIdx} onChange={changeTab}>
         <Tab.List className='mx-auto flex w-full max-w-sm justify-center gap-4 rounded-md bg-gray-200 px-1  py-1'>
           <Tab
+            type='button'
             className={({ selected }) =>
               mergeClassNames("w-full rounded-md px-3 font-semibold", selected ? "bg-white" : "")
             }
@@ -77,6 +79,7 @@ export default function Index() {
             Study
           </Tab>
           <Tab
+            type='button'
             className={({ selected }) =>
               mergeClassNames("w-full rounded-md px-3 font-semibold", selected ? "bg-white" : "")
             }
@@ -104,7 +107,7 @@ export default function Index() {
         </Tab.Panels>
       </Tab.Group>
       <div className='mt-20 space-y-6'>
-        <ul className='space-y-8 pb-4'>
+        <ul className='space-y-4 pb-4'>
           {tasks.length ? (
             tasks.map((task) => {
               return (
@@ -176,140 +179,5 @@ function TaskForm() {
         </button>
       )}
     </Form>
-  );
-}
-
-type TaskItemProps = {
-  id: string;
-  taskName: string;
-  isCompleted: boolean;
-  timerCaptured: { start: number; stop: number };
-  completionTime: number;
-  timerState: TimerState;
-  isBreak: boolean;
-};
-function TaskItem({
-  id: taskId,
-  taskName,
-  isCompleted,
-  completionTime,
-  timerCaptured,
-  timerState,
-  isBreak
-}: TaskItemProps) {
-  const itemFetcher = useFetcher();
-  const mountedTime = useRef<number>(0);
-  const editRef = useRef<HTMLInputElement>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const toggleOnStopCount = useRef(0);
-
-  useEffect(() => {
-    if (timerState === "running") toggleOnStopCount.current = 0;
-    if (!isCompleted) mountedTime.current = Date.now();
-    if (isCompleted) mountedTime.current = 0;
-  }, [isCompleted, timerState]);
-
-  useEffect(() => {
-    if (itemFetcher.submission?.formData.get("_action") === "edit") {
-      setIsEditing(false);
-    }
-  }, [itemFetcher.submission]);
-
-  useEffect(() => {
-    if (isEditing) editRef.current?.focus();
-  }, [isEditing]);
-
-  const toggleCompleted = (e: ChangeEvent<HTMLFormElement>) => {
-    if (e.target.id !== taskId || isBreak) return;
-
-    const timeWhenClicked = Date.now();
-    if (timerState === "running")
-      return itemFetcher.submit(
-        {
-          taskId,
-          elapsedTime: isCompleted
-            ? String(completionTime)
-            : String(completionTime + (timeWhenClicked - mountedTime.current)),
-          isCompleted: isCompleted ? "" : "on",
-          _action: "toggleTask"
-        },
-        {
-          replace: true,
-          method: "post"
-        }
-      );
-    //TODO: Still has 1 bug
-    if (timerState === "paused") {
-      itemFetcher.submit(
-        {
-          taskId,
-          elapsedTime:
-            toggleOnStopCount.current > 0 || isCompleted
-              ? String(completionTime)
-              : String(
-                  completionTime +
-                    (timerCaptured.stop -
-                      (timerCaptured.stop > mountedTime.current ? mountedTime.current : timerCaptured.start))
-                ),
-          isCompleted: isCompleted ? "" : "on",
-          _action: "toggleTask"
-        },
-        {
-          replace: true,
-          method: "post"
-        }
-      );
-      toggleOnStopCount.current = isCompleted ? toggleOnStopCount.current : toggleOnStopCount.current + 1;
-    }
-  };
-  return (
-    <li>
-      <itemFetcher.Form method='post' className='flex justify-between gap-2' onChange={toggleCompleted}>
-        <input type='text' hidden name='taskId' defaultValue={taskId} />
-        {isEditing ? (
-          <div className='flex w-full flex-col gap-2'>
-            <input type='text' defaultValue={taskName} name='editedTask' ref={editRef} className='w-full' />
-            <div className='flex gap-2 self-end'>
-              <button
-                className=' rounded-sm px-2 ring-1 ring-blue-600'
-                type='button'
-                onClick={() => setIsEditing(false)}
-              >
-                Cancel
-              </button>
-              <button className=' rounded-sm bg-blue-600 px-2 text-white ' name='_action' value='edit' type='submit'>
-                Save
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className='flex items-center gap-4'>
-              <input type='checkbox' id={taskId} name='isCompleted' defaultChecked={isCompleted} />
-              <label htmlFor={taskId}>{taskName}</label>
-            </div>
-            <div className='flex gap-2'>
-              <button
-                className={`rounded-sm bg-red-600 px-2 text-white ${
-                  itemFetcher.submission?.formData.get("_action") === "delete" ? "opacity-60" : ""
-                }`}
-                name='_action'
-                value='delete'
-                type='submit'
-              >
-                Delete
-              </button>
-              <button
-                className='rounded-sm bg-blue-600 px-2 text-white'
-                type='button'
-                onClick={() => setIsEditing(true)}
-              >
-                Edit
-              </button>
-            </div>
-          </>
-        )}
-      </itemFetcher.Form>
-    </li>
   );
 }
