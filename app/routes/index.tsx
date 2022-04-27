@@ -23,7 +23,6 @@ export const action: ActionFunction = async ({ request }) => {
   const isCompleted = Boolean(formData.get("isCompleted"));
   const elapsedTime = Number(formData.get("elapsedTime"));
 
-  console.log(actionType);
   if (typeof actionType !== "string") return json({ message: "Action is not a string" }, 400);
   if (taskId && typeof taskId !== "string") return json({ message: "TaskId is not a string" }, 400);
   if (editedTask && typeof editedTask !== "string") return json({ message: "EditedTask is not a string" }, 400);
@@ -74,10 +73,10 @@ export default function Index() {
   };
 
   return (
-    <div className='mx-auto w-10/12 max-w-lg py-4 '>
+    <div className='mx-auto w-10/12 max-w-lg py-12 '>
       <h1 className='sr-only'>Welcome to Remix Timer</h1>
       <Tab.Group selectedIndex={selectedTabIdx} onChange={changeTab}>
-        <Tab.List className='mx-auto flex w-full max-w-sm justify-center gap-4 rounded-md bg-[#272851] px-1  py-1'>
+        <Tab.List className='mx-auto flex w-full justify-center gap-4 rounded-md bg-[#272851] p-1 '>
           <Tab
             type='button'
             className={({ selected }) =>
@@ -172,14 +171,18 @@ function TaskForm() {
             className='w-full rounded-md bg-[#272851] text-white focus:border-white'
           />
           <div className='flex gap-2 self-end'>
-            <button type='button' onClick={() => setIsOpen(false)} className='rounded-md px-2 py-1 ring-1  ring-white'>
+            <button
+              type='button'
+              onClick={() => setIsOpen(false)}
+              className='rounded-md px-3 py-1 font-semibold text-white  '
+            >
               Cancel
             </button>
             <button
               type='submit'
               name='_action'
               value='create'
-              className='rounded-md bg-black px-2 py-1 font-semibold text-white'
+              className='rounded-md bg-[#338bd3] px-2 py-1 font-semibold text-white'
             >
               Add Task
             </button>

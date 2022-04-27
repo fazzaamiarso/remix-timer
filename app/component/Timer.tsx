@@ -57,7 +57,7 @@ export default function Timer({ timerState, initialTime, setTimerState, setTimer
           )}
         >
           {timerState === "running" ? "Pause" : "Play"}
-          <span className='absolute inset-0 -z-10 translate-y-1 rounded-md bg-gray-300 group-active:hidden' />
+          <span className='absolute inset-0 -z-10 translate-y-1 rounded-md bg-[#1a65a1] group-active:hidden' />
         </button>
         <button type='button' onClick={clearTimer} className={mergeClassNames("py-3 px-1 font-semibold text-white")}>
           {timerState === "running" ? "End" : timerState === "paused" ? "Reset" : ""}

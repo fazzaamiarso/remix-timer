@@ -1,7 +1,7 @@
 import { useFetcher } from "@remix-run/react";
 import { useRef, useState, useEffect, ChangeEvent } from "react";
 import { TimerState } from "~/routes";
-import { CheckCircleIcon, PencilIcon, TrashIcon } from "@heroicons/react/outline";
+import { CheckCircleIcon, PencilIcon, TrashIcon } from "@heroicons/react/solid";
 import { mergeClassNames } from "~/utils/client";
 
 type TaskItemProps = {
@@ -118,14 +118,15 @@ export function TaskItem({
               className='w-full rounded-md bg-[#272851] text-white focus:border-white'
             />
             <div className='flex gap-2 self-end'>
-              <button
-                className=' rounded-sm px-2 ring-1 ring-blue-600'
-                type='button'
-                onClick={() => setIsEditing(false)}
-              >
+              <button className=' rounded-md px-2 font-semibold   ' type='button' onClick={() => setIsEditing(false)}>
                 Cancel
               </button>
-              <button className=' rounded-sm bg-blue-600 px-2 text-white ' name='_action' value='edit' type='submit'>
+              <button
+                className=' rounded-md bg-[#338bd3] px-2  font-semibold text-white '
+                name='_action'
+                value='edit'
+                type='submit'
+              >
                 Save
               </button>
             </div>
@@ -145,27 +146,29 @@ export function TaskItem({
                   className={mergeClassNames("aspect-square h-8 ", isCompleted ? "text-green-500" : "")}
                 />
               </div>
-              <label htmlFor={taskId}>{taskName}</label>
+              <label htmlFor={taskId} className={mergeClassNames(isCompleted ? "line-through opacity-90" : "")}>
+                {taskName}
+              </label>
             </div>
-            <div className='flex gap-2'>
+            <div className='flex gap-3'>
               <button
                 aria-label='Delete Task'
-                className={`rounded-md bg-red-500 p-2 text-white ${
+                className={`rounded-md p-1 text-white ${
                   itemFetcher.submission?.formData.get("_action") === "delete" ? "opacity-60" : ""
                 }`}
                 name='_action'
                 value='delete'
                 type='submit'
               >
-                <TrashIcon aria-hidden='true' className='h-4' />
+                <TrashIcon aria-hidden='true' className='h-5' />
               </button>
               <button
-                className='rounded-md bg-blue-500 p-2 text-white'
+                className='rounded-md  p-1 text-white'
                 type='button'
                 onClick={() => setIsEditing(true)}
                 aria-label='Edit Task'
               >
-                <PencilIcon aria-hidden='true' className='h-4' />
+                <PencilIcon aria-hidden='true' className='h-5' />
               </button>
             </div>
           </>
