@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useInterval } from "~/hooks/use-interval";
 import { TimerState } from "~/routes";
+import { setStateType } from "~/types";
 import { mergeClassNames } from "~/utils/client";
 
-type setStateType<Type> = React.Dispatch<React.SetStateAction<Type>>;
 type TimerProps = {
   initialTime: number;
   timerState: TimerState;
@@ -49,14 +49,14 @@ export default function Timer({ timerState, initialTime, setTimerState, setTimer
         timer.seconds
       ).padStart(2, "0")}`}</div>
       <div className='flex gap-3 '>
-        <button
+        <button //TODO: fix the button lift effect
           type='button'
           onClick={toggleTimer}
           className={mergeClassNames(
             " group relative rounded-md bg-[#3C7AAE] px-6 py-3 font-semibold text-white active:translate-y-1"
           )}
         >
-          {timerState === "running" ? "Pause" : "Play"}
+          {timerState === "running" ? "Pause" : "Start"}
           <span className='absolute inset-0 -z-10 translate-y-1 rounded-md bg-[#1a65a1] group-active:hidden' />
         </button>
         <button type='button' onClick={clearTimer} className={mergeClassNames("py-3 px-1 font-semibold text-white")}>

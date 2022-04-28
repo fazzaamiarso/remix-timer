@@ -1,8 +1,10 @@
 import { useFetcher } from "@remix-run/react";
-import { useRef, useState, useEffect, ChangeEvent } from "react";
+import React, { useRef, useState, useEffect, ChangeEvent, MouseEvent } from "react";
 import { TimerState } from "~/routes";
 import { CheckCircleIcon, PencilIcon, TrashIcon } from "@heroicons/react/solid";
 import { mergeClassNames } from "~/utils/client";
+import { setStateType } from "~/types";
+import { Task } from "@prisma/client";
 
 type TaskItemProps = {
   id: string;
@@ -12,6 +14,8 @@ type TaskItemProps = {
   completionTime: number;
   timerState: TimerState;
   isBreak: boolean;
+  setActiveTask: setStateType<Task["taskName"] | null>;
+  isActiveTask: boolean;
 };
 export function TaskItem({
   id: taskId,
@@ -20,7 +24,9 @@ export function TaskItem({
   completionTime,
   timerCaptured,
   timerState,
-  isBreak
+  isBreak,
+  isActiveTask,
+  setActiveTask
 }: TaskItemProps) {
   const itemFetcher = useFetcher();
   const mountedTime = useRef<number>(0);
@@ -38,7 +44,10 @@ export function TaskItem({
     if (itemFetcher.submission?.formData.get("_action") === "edit") {
       setIsEditing(false);
     }
-  }, [itemFetcher.submission]);
+    if (itemFetcher.submission?.formData.get("_action") === "delete" && isActiveTask) {
+      setActiveTask(null);
+    }
+  }, [itemFetcher.submission, isActiveTask, setActiveTask]);
 
   useEffect(() => {
     if (isEditing) editRef.current?.focus();
@@ -100,13 +109,21 @@ export function TaskItem({
       }
     );
   };
+
+  const handleSetActive = (e: MouseEvent<HTMLLIElement>) => {
+    if (!(e.target instanceof HTMLLIElement)) return;
+    setActiveTask(taskName);
+  };
+
   return (
-    <li>
-      <itemFetcher.Form
-        method='post'
-        className='flex justify-between gap-2 rounded-md bg-[#43446A] p-4 text-white'
-        onChange={toggleCompleted}
-      >
+    <li
+      onClick={handleSetActive}
+      className={mergeClassNames(
+        "rounded-md border-l-4 bg-[#43446A] p-4 text-white ",
+        isActiveTask ? "border-red-400" : "border-[#43446A]"
+      )}
+    >
+      <itemFetcher.Form method='post' className='flex justify-between gap-2' onChange={toggleCompleted}>
         <input type='text' hidden name='taskId' defaultValue={taskId} />
         {isEditing ? (
           <div className='flex w-full flex-col gap-4'>
