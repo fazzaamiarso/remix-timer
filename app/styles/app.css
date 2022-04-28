@@ -822,6 +822,16 @@ select{
   background-color: rgb(26 101 161 / var(--tw-bg-opacity));
 }
 
+.bg-\[\#484966\]{
+  --tw-bg-opacity: 1;
+  background-color: rgb(72 73 102 / var(--tw-bg-opacity));
+}
+
+.bg-\[\#363654\]{
+  --tw-bg-opacity: 1;
+  background-color: rgb(54 54 84 / var(--tw-bg-opacity));
+}
+
 .p-4{
   padding: 1rem;
 }
@@ -870,6 +880,16 @@ select{
   padding-bottom: 0.5rem;
 }
 
+.py-4{
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.py-8{
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
 .pb-4{
   padding-bottom: 1rem;
 }
@@ -888,6 +908,16 @@ select{
   line-height: 1.75rem;
 }
 
+.text-xl{
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.text-2xl{
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
 .font-semibold{
   font-weight: 600;
 }
@@ -904,6 +934,11 @@ select{
 .text-green-500{
   --tw-text-opacity: 1;
   color: rgb(34 197 94 / var(--tw-text-opacity));
+}
+
+.text-\[\#D3D4FF\]{
+  --tw-text-opacity: 1;
+  color: rgb(211 212 255 / var(--tw-text-opacity));
 }
 
 .line-through{
@@ -937,6 +972,11 @@ select{
 
 .hover\:cursor-pointer:hover{
   cursor: pointer;
+}
+
+.hover\:border-gray-300:hover{
+  --tw-border-opacity: 1;
+  border-color: rgb(209 213 219 / var(--tw-border-opacity));
 }
 
 .hover\:opacity-90:hover{

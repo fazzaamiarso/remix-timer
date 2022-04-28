@@ -131,7 +131,9 @@ export default function Index() {
               );
             })
           ) : (
-            <p className='text-lg'>No task yet!</p>
+            <div className='flex w-full items-center justify-center py-4'>
+              <p className='text-2xl font-bold text-white'> No Ongoing Task</p>
+            </div>
           )}
         </ul>
         <TaskForm />
@@ -192,7 +194,7 @@ function TaskForm() {
         <button
           type='button'
           onClick={() => setIsOpen(true)}
-          className='w-full rounded-md border-2 border-dashed border-white  px-1 py-2 font-semibold text-white hover:opacity-90'
+          className='w-full rounded-md border-2 border-dashed border-white  px-1 py-2 font-semibold text-white hover:border-gray-300 '
         >
           Add task
         </button>

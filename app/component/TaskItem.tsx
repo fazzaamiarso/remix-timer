@@ -118,7 +118,7 @@ export function TaskItem({
               className='w-full rounded-md bg-[#272851] text-white focus:border-white'
             />
             <div className='flex gap-2 self-end'>
-              <button className=' rounded-md px-2 font-semibold   ' type='button' onClick={() => setIsEditing(false)}>
+              <button className=' rounded-md px-2 font-semibold' type='button' onClick={() => setIsEditing(false)}>
                 Cancel
               </button>
               <button
@@ -143,7 +143,7 @@ export function TaskItem({
               />
               <div className=''>
                 <CheckCircleIcon
-                  className={mergeClassNames("aspect-square h-8 ", isCompleted ? "text-green-500" : "")}
+                  className={mergeClassNames("aspect-square h-8 ", isCompleted ? "text-green-500" : "text-[#D3D4FF]")}
                 />
               </div>
               <label htmlFor={taskId} className={mergeClassNames(isCompleted ? "line-through opacity-90" : "")}>

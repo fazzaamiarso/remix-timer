@@ -44,7 +44,7 @@ export default function Timer({ timerState, initialTime, setTimerState, setTimer
   };
 
   return (
-    <div className='mx-auto my-8 flex flex-col items-center space-y-8'>
+    <div className='mx-auto my-8 flex flex-col items-center space-y-8 rounded-md bg-[#43446A] py-8'>
       <div className='text-7xl font-bold text-white'>{`${String(timer.minutes).padStart(2, "0")}:${String(
         timer.seconds
       ).padStart(2, "0")}`}</div>
