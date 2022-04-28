@@ -4,7 +4,7 @@ import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useLoaderData, useTransition } from "@remix-run/react";
 import { useRef, useState, useEffect } from "react";
-import { TaskItem } from "~/component/TaskItem";
+import Tasks from "~/component/Tasks";
 import Timer from "~/component/Timer";
 import { mergeClassNames } from "~/utils/client";
 import { db } from "~/utils/prisma.server";
@@ -56,7 +56,6 @@ export default function Index() {
   const [timerState, setTimerState] = useState<TimerState>("init");
   const [timerCaptured, setTimerCaptured] = useState({ start: 0, stop: 0 });
   const [selectedTabIdx, setSelectedTabIdx] = useState(0);
-  const [activeTask, setActiveTask] = useState<Task["taskName"] | null>(null);
 
   let hadBeenCalled = false;
   const changeTab = (currentTabIdx: number) => {
@@ -115,33 +114,7 @@ export default function Index() {
         </Tab.Panels>
       </Tab.Group>
       <div className=''>
-        <div className='flex w-full items-center justify-center py-4'>
-          <p className='text-lg font-semibold text-white'># {activeTask ?? "No Active Task"}</p>
-        </div>
-        <ul className='space-y-4 pb-4'>
-          {tasks.length ? (
-            tasks.map((task) => {
-              return (
-                <TaskItem
-                  key={task.id}
-                  id={task.id}
-                  taskName={task.taskName}
-                  isCompleted={task.isCompleted}
-                  completionTime={task.completionTime}
-                  timerState={timerState}
-                  timerCaptured={timerCaptured}
-                  isBreak={isBreak}
-                  isActiveTask={activeTask === task.taskName}
-                  setActiveTask={setActiveTask}
-                />
-              );
-            })
-          ) : (
-            <div className='flex w-full items-center justify-center py-4'>
-              <p className='text-2xl font-bold text-white'> No Task</p>
-            </div>
-          )}
-        </ul>
+        <Tasks tasks={tasks} timerState={timerState} timerCaptured={timerCaptured} isBreak={isBreak} />
         <TaskForm />
       </div>
     </div>

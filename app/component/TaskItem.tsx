@@ -1,5 +1,5 @@
 import { useFetcher } from "@remix-run/react";
-import React, { useRef, useState, useEffect, ChangeEvent, MouseEvent } from "react";
+import React, { useRef, useEffect, ChangeEvent, MouseEvent } from "react";
 import { TimerState } from "~/routes";
 import { CheckCircleIcon, PencilIcon, TrashIcon } from "@heroicons/react/solid";
 import { mergeClassNames } from "~/utils/client";
@@ -14,8 +14,10 @@ type TaskItemProps = {
   completionTime: number;
   timerState: TimerState;
   isBreak: boolean;
-  setActiveTask: setStateType<Task["taskName"] | null>;
-  isActiveTask: boolean;
+  activeTaskId: Task["id"];
+  editingTaskId: string;
+  setEditingTaskId: setStateType<Task["id"]>;
+  setActiveTaskId: setStateType<Task["id"]>;
 };
 export function TaskItem({
   id: taskId,
@@ -25,14 +27,18 @@ export function TaskItem({
   timerCaptured,
   timerState,
   isBreak,
-  isActiveTask,
-  setActiveTask
+  activeTaskId,
+  editingTaskId,
+  setEditingTaskId,
+  setActiveTaskId
 }: TaskItemProps) {
   const itemFetcher = useFetcher();
   const mountedTime = useRef<number>(0);
   const editRef = useRef<HTMLInputElement>(null);
-  const [isEditing, setIsEditing] = useState(false);
   const toggleOnStopCount = useRef(0);
+
+  const isCurrentlyEditing = editingTaskId === taskId;
+  const isActiveTask = activeTaskId === taskId;
 
   useEffect(() => {
     if (timerState === "running") toggleOnStopCount.current = 0;
@@ -42,16 +48,16 @@ export function TaskItem({
 
   useEffect(() => {
     if (itemFetcher.submission?.formData.get("_action") === "edit") {
-      setIsEditing(false);
+      setEditingTaskId("");
     }
     if (itemFetcher.submission?.formData.get("_action") === "delete" && isActiveTask) {
-      setActiveTask(null);
+      setActiveTaskId("");
     }
-  }, [itemFetcher.submission, isActiveTask, setActiveTask]);
+  }, [itemFetcher.submission, isActiveTask, setActiveTaskId, setEditingTaskId]);
 
   useEffect(() => {
-    if (isEditing) editRef.current?.focus();
-  }, [isEditing]);
+    if (isCurrentlyEditing) editRef.current?.focus();
+  }, [isCurrentlyEditing]);
 
   const toggleCompleted = (e: ChangeEvent<HTMLFormElement>) => {
     if (e.target.id !== taskId || isBreak) return;
@@ -112,7 +118,7 @@ export function TaskItem({
 
   const handleSetActive = (e: MouseEvent<HTMLLIElement>) => {
     if (!(e.target instanceof HTMLLIElement)) return;
-    setActiveTask(taskName);
+    setActiveTaskId(taskId);
   };
 
   return (
@@ -125,7 +131,7 @@ export function TaskItem({
     >
       <itemFetcher.Form method='post' className='flex justify-between gap-2' onChange={toggleCompleted}>
         <input type='text' hidden name='taskId' defaultValue={taskId} />
-        {isEditing ? (
+        {isCurrentlyEditing ? (
           <div className='flex w-full flex-col gap-4'>
             <input
               type='text'
@@ -135,7 +141,7 @@ export function TaskItem({
               className='w-full rounded-md bg-[#272851] text-white focus:border-white'
             />
             <div className='flex gap-2 self-end'>
-              <button className=' rounded-md px-2 font-semibold' type='button' onClick={() => setIsEditing(false)}>
+              <button className=' rounded-md px-2 font-semibold' type='button' onClick={() => setEditingTaskId("")}>
                 Cancel
               </button>
               <button
@@ -182,7 +188,7 @@ export function TaskItem({
               <button
                 className='rounded-md  p-1 text-white'
                 type='button'
-                onClick={() => setIsEditing(true)}
+                onClick={() => setEditingTaskId(taskId)}
                 aria-label='Edit Task'
               >
                 <PencilIcon aria-hidden='true' className='h-5' />
