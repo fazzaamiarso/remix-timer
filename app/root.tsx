@@ -18,7 +18,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className='bg-primary'>
+      <body className='bg-primary font-rubik'>
         <Outlet />
         <ScrollRestoration />
         <Scripts />
