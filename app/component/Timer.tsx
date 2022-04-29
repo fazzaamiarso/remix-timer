@@ -52,12 +52,12 @@ export default function Timer({ timerState, initialTime, setTimerState, setTimer
         <button //TODO: fix the button lift effect
           type='button'
           onClick={toggleTimer}
-          className={mergeClassNames(
-            " group relative rounded-md bg-[#3C7AAE] px-6 py-3 font-semibold text-white active:translate-y-1"
-          )}
+          className='relative w-max bg-transparent  font-semibold text-white'
         >
-          {timerState === "running" ? "Pause" : "Start"}
-          <span className='absolute inset-0 -z-10 translate-y-1 rounded-md bg-[#1a65a1] group-active:hidden' />
+          <span className='absolute top-0 left-0 h-full w-full translate-y-px rounded-md bg-[#1a65a1]' />
+          <span className='relative block  -translate-y-1 rounded-md bg-[#3C7AAE] px-6 py-3  active:translate-y-0'>
+            {timerState === "running" ? "Pause" : "Start"}
+          </span>
         </button>
         <button type='button' onClick={clearTimer} className={mergeClassNames("py-3 px-1 font-semibold text-white")}>
           {timerState === "running" ? "End" : timerState === "paused" ? "Reset" : ""}
