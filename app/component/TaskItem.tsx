@@ -141,11 +141,15 @@ export function TaskItem({
               className='w-full rounded-md bg-[#272851] text-white focus:border-white'
             />
             <div className='flex gap-2 self-end'>
-              <button className=' rounded-md px-2 font-semibold' type='button' onClick={() => setEditingTaskId("")}>
+              <button
+                className=' rounded-md px-3 py-1 text-sm font-semibold'
+                type='button'
+                onClick={() => setEditingTaskId("")}
+              >
                 Cancel
               </button>
               <button
-                className=' rounded-md bg-[#338bd3] px-2  font-semibold text-white '
+                className=' rounded-md bg-[#338bd3] px-3 py-1 text-sm  font-semibold text-white '
                 name='_action'
                 value='edit'
                 type='submit'

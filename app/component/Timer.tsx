@@ -16,7 +16,7 @@ export default function Timer({ timerState, initialTime, setTimerState, setTimer
 
   useInterval(
     () => {
-      if (timer.seconds === 0 && timer.minutes === 0) return clearTimer();
+      if (timer.seconds === 0 && timer.minutes === 0) return resetTimer(); // TODO: create end logic
       if (timer.seconds === 0) return setTimer((prev) => ({ minutes: prev.minutes - 1, seconds: 59 }));
       else
         setTimer((prev) => ({
@@ -27,7 +27,8 @@ export default function Timer({ timerState, initialTime, setTimerState, setTimer
     timerState === "running" ? 1000 : null
   );
 
-  const clearTimer = () => {
+  const resetTimer = () => {
+    if (!confirm("Are you sure want to end the session?")) return;
     setTimerState("idle");
     setTimer({ minutes: initialTime, seconds: 0 });
     setTimerCaptured({ start: 0, stop: 0 });
@@ -59,7 +60,12 @@ export default function Timer({ timerState, initialTime, setTimerState, setTimer
             {timerState === "running" ? "Pause" : "Start"}
           </span>
         </button>
-        <button type='button' onClick={clearTimer} className={mergeClassNames("py-3 px-1 font-semibold text-white")}>
+        <button
+          type='button'
+          onClick={resetTimer}
+          className={mergeClassNames("py-3 px-1 font-semibold text-white")}
+          hidden={timerState === "init" || timerState === "idle"}
+        >
           {timerState === "running" ? "End" : timerState === "paused" ? "Reset" : ""}
         </button>
       </div>

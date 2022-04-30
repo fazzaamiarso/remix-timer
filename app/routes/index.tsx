@@ -1,16 +1,14 @@
-// import { Tab } from "@headlessui/react";
 import type { Task } from "@prisma/client";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useLoaderData, useTransition } from "@remix-run/react";
-import { useRef, useState, useEffect, ReactNode } from "react";
+import { useRef, useState, useEffect } from "react";
 import Tasks from "~/component/Tasks";
-import Timer from "~/component/Timer";
 import { mergeClassNames } from "~/utils/client";
 import { db } from "~/utils/prisma.server";
 import { createTask, deleteTask, editTask, toggleTask } from "~/utils/task.server";
 
-import { Tabs, TabList, Tab, TabPanels, TabPanel, useTabsContext } from "@reach/tabs";
+import TimerTabs from "~/component/Tabs";
 
 export const loader: LoaderFunction = async () => {
   const data = await db.task.findMany({ orderBy: { createdAt: "asc" } });
@@ -44,12 +42,6 @@ export const action: ActionFunction = async ({ request }) => {
   }
 };
 
-//TODO: move to persisted storage
-const USER_PREF = {
-  workTime: 25,
-  breakTime: 10
-};
-
 export type TimerState = "idle" | "paused" | "running" | "init";
 export default function Index() {
   const tasks = useLoaderData<Task[]>();
@@ -73,49 +65,18 @@ export default function Index() {
   return (
     <div className='mx-auto w-10/12 max-w-lg py-12 '>
       <h1 className='sr-only'>Welcome to Remix Timer</h1>
-      <Tabs index={selectedTabIdx} onChange={handleTabsChange}>
-        <TabList className='mx-auto flex w-full justify-center gap-4 rounded-md bg-[#272851] p-1 '>
-          <CustomTab index={0}>Study</CustomTab>
-          <CustomTab index={1}>Break</CustomTab>
-        </TabList>
-        <TabPanels>
-          <TabPanel>
-            <Timer
-              key={`${selectedTabIdx}0`}
-              setTimerState={setTimerState}
-              timerState={timerState}
-              initialTime={USER_PREF.workTime}
-              setTimerCaptured={setTimerCaptured}
-            />
-          </TabPanel>
-          <TabPanel>
-            <Timer
-              key={`${selectedTabIdx}1`}
-              setTimerState={setTimerState}
-              timerState={timerState}
-              initialTime={USER_PREF.breakTime}
-              setTimerCaptured={setTimerCaptured}
-            />
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
+      <TimerTabs
+        selectedTabIdx={selectedTabIdx}
+        handleTabsChange={handleTabsChange}
+        setTimerCaptured={setTimerCaptured}
+        setTimerState={setTimerState}
+        timerState={timerState}
+      />
       <div className=''>
         <Tasks tasks={tasks} timerState={timerState} timerCaptured={timerCaptured} isBreak={isBreak} />
         <TaskForm />
       </div>
     </div>
-  );
-}
-
-function CustomTab({ index, children }: { index: number; children: ReactNode }) {
-  const { selectedIndex } = useTabsContext();
-  const isActiveTab = selectedIndex === index;
-  return (
-    <Tab
-      className={mergeClassNames("w-full rounded-md px-3 font-semibold text-white", isActiveTab ? "bg-[#43446A]" : "")}
-    >
-      {children}
-    </Tab>
   );
 }
 
@@ -171,7 +132,7 @@ function TaskForm() {
         <button
           type='button'
           onClick={() => setIsOpen(true)}
-          className='w-full rounded-md border-2 border-dashed border-white  px-1 py-2 font-semibold text-white hover:border-gray-300 '
+          className='w-full rounded-md border-2 border-dashed border-white px-3  py-1 text-sm font-semibold text-white hover:border-gray-300 '
         >
           Add task
         </button>
