@@ -1,14 +1,16 @@
-import { Tab } from "@headlessui/react";
+// import { Tab } from "@headlessui/react";
 import type { Task } from "@prisma/client";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useLoaderData, useTransition } from "@remix-run/react";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, ReactNode } from "react";
 import Tasks from "~/component/Tasks";
 import Timer from "~/component/Timer";
 import { mergeClassNames } from "~/utils/client";
 import { db } from "~/utils/prisma.server";
 import { createTask, deleteTask, editTask, toggleTask } from "~/utils/task.server";
+
+import { Tabs, TabList, Tab, TabPanels, TabPanel, useTabsContext } from "@reach/tabs";
 
 export const loader: LoaderFunction = async () => {
   const data = await db.task.findMany({ orderBy: { createdAt: "asc" } });
@@ -57,67 +59,63 @@ export default function Index() {
   const [timerCaptured, setTimerCaptured] = useState({ start: 0, stop: 0 });
   const [selectedTabIdx, setSelectedTabIdx] = useState(0);
 
-  let hadBeenCalled = false;
-  const changeTab = (currentTabIdx: number) => {
+  const handleTabsChange = (index: number) => {
     if (
-      timerState === "running" &&
-      !hadBeenCalled &&
+      (timerState === "running" || timerState === "paused") &&
       !confirm("Are you sure want to end the session? Timer will be reset.")
-    ) {
-      hadBeenCalled = true; // Have to keep track of the function call because there is a bug where this handler will be called multiple time after cancelling. Maybe because of the timer immediately change the state?
+    )
       return;
-    }
-    setIsBreak(currentTabIdx === 1);
-    setSelectedTabIdx(currentTabIdx);
+    setIsBreak(index === 1 ? true : false);
+    setSelectedTabIdx(index);
     setTimerState("idle");
   };
 
   return (
     <div className='mx-auto w-10/12 max-w-lg py-12 '>
       <h1 className='sr-only'>Welcome to Remix Timer</h1>
-      <Tab.Group selectedIndex={selectedTabIdx} onChange={changeTab}>
-        <Tab.List className='mx-auto flex w-full justify-center gap-4 rounded-md bg-[#272851] p-1 '>
-          <Tab
-            type='button'
-            className={({ selected }) =>
-              mergeClassNames("w-full rounded-md px-3 font-semibold text-white", selected ? "bg-[#43446A]" : "")
-            }
-          >
-            Study
-          </Tab>
-          <Tab
-            type='button'
-            className={({ selected }) =>
-              mergeClassNames("w-full rounded-md px-3 font-semibold text-white", selected ? "bg-[#43446A]" : "")
-            }
-          >
-            Break
-          </Tab>
-        </Tab.List>
-        <Tab.Panels>
-          <Tab.Panel>
+      <Tabs index={selectedTabIdx} onChange={handleTabsChange}>
+        <TabList className='mx-auto flex w-full justify-center gap-4 rounded-md bg-[#272851] p-1 '>
+          <CustomTab index={0}>Study</CustomTab>
+          <CustomTab index={1}>Break</CustomTab>
+        </TabList>
+        <TabPanels>
+          <TabPanel>
             <Timer
+              key={`${selectedTabIdx}0`}
               setTimerState={setTimerState}
               timerState={timerState}
               initialTime={USER_PREF.workTime}
               setTimerCaptured={setTimerCaptured}
             />
-          </Tab.Panel>
-          <Tab.Panel>
+          </TabPanel>
+          <TabPanel>
             <Timer
+              key={`${selectedTabIdx}1`}
               setTimerState={setTimerState}
               timerState={timerState}
               initialTime={USER_PREF.breakTime}
               setTimerCaptured={setTimerCaptured}
             />
-          </Tab.Panel>
-        </Tab.Panels>
-      </Tab.Group>
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
       <div className=''>
         <Tasks tasks={tasks} timerState={timerState} timerCaptured={timerCaptured} isBreak={isBreak} />
         <TaskForm />
       </div>
     </div>
+  );
+}
+
+function CustomTab({ index, children }: { index: number; children: ReactNode }) {
+  const { selectedIndex } = useTabsContext();
+  const isActiveTab = selectedIndex === index;
+  return (
+    <Tab
+      className={mergeClassNames("w-full rounded-md px-3 font-semibold text-white", isActiveTab ? "bg-[#43446A]" : "")}
+    >
+      {children}
+    </Tab>
   );
 }
 

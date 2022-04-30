@@ -842,14 +842,14 @@ select{
   background-color: transparent;
 }
 
-.bg-\[\#3C7AAE\]{
-  --tw-bg-opacity: 1;
-  background-color: rgb(60 122 174 / var(--tw-bg-opacity));
-}
-
 .bg-\[\#1a65a1\]{
   --tw-bg-opacity: 1;
   background-color: rgb(26 101 161 / var(--tw-bg-opacity));
+}
+
+.bg-\[\#3C7AAE\]{
+  --tw-bg-opacity: 1;
+  background-color: rgb(60 122 174 / var(--tw-bg-opacity));
 }
 
 .p-4{
