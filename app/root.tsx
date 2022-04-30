@@ -19,6 +19,12 @@ export default function App() {
         <Links />
       </head>
       <body className='bg-primary font-rubik'>
+        <header className='mx-auto flex max-w-lg  justify-between pt-8 pb-12 '>
+          <h1 className='text-lg font-bold text-white'>POMER</h1>
+          <button className='rounded-md bg-[#3C7AAE] px-3 py-1 text-white' type='button'>
+            Login
+          </button>
+        </header>
         <Outlet />
         <ScrollRestoration />
         <Scripts />

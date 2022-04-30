@@ -21,7 +21,7 @@ export default function Tasks({ tasks, timerCaptured, timerState, isBreak }: Tas
   return (
     <>
       <div className='flex w-full items-center justify-center py-4'>
-        <p className='text-lg font-semibold text-white'># {activeTaskName ?? "No Active Task"}</p>
+        <p className='text-lg font-semibold text-white'># {activeTaskName ?? "No active task"}</p>
       </div>
       <ul className='space-y-4 pb-4'>
         {tasks.length ? (
@@ -45,7 +45,7 @@ export default function Tasks({ tasks, timerCaptured, timerState, isBreak }: Tas
           })
         ) : (
           <div className='flex w-full items-center justify-center py-4'>
-            <p className='text-2xl font-bold text-white'> No Task</p>
+            <p className='text-2xl font-bold text-white'> No task</p>
           </div>
         )}
       </ul>

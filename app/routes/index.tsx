@@ -63,8 +63,7 @@ export default function Index() {
   };
 
   return (
-    <div className='mx-auto w-10/12 max-w-lg py-12 '>
-      <h1 className='sr-only'>Welcome to Remix Timer</h1>
+    <div className='mx-auto w-10/12 max-w-lg pb-16'>
       <TimerTabs
         selectedTabIdx={selectedTabIdx}
         handleTabsChange={handleTabsChange}
@@ -114,7 +113,7 @@ function TaskForm() {
             <button
               type='button'
               onClick={() => setIsOpen(false)}
-              className='rounded-md px-3 py-1 font-semibold text-white  '
+              className='rounded-md px-3 py-1 text-sm  font-semibold text-white  '
             >
               Cancel
             </button>
@@ -122,7 +121,7 @@ function TaskForm() {
               type='submit'
               name='_action'
               value='create'
-              className='rounded-md bg-[#338bd3] px-2 py-1 font-semibold text-white'
+              className='rounded-md bg-[#338bd3] px-3 py-1 text-sm  font-semibold text-white'
             >
               Add Task
             </button>
@@ -132,7 +131,7 @@ function TaskForm() {
         <button
           type='button'
           onClick={() => setIsOpen(true)}
-          className='w-full rounded-md border-2 border-dashed border-white px-3  py-1 text-sm font-semibold text-white hover:border-gray-300 '
+          className='w-full rounded-md border-2 border-dashed border-white  px-1 py-2 font-semibold text-white hover:border-gray-300 '
         >
           Add task
         </button>

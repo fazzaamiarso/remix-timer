@@ -166,14 +166,18 @@ export function TaskItem({
                 id={taskId}
                 name='isCompleted'
                 defaultChecked={isCompleted}
-                className=' absolute z-10 h-8 w-8 opacity-0  hover:cursor-pointer'
+                className='peer absolute z-10 h-8 w-8  opacity-0 hover:cursor-pointer'
               />
-              <div className=''>
+              <div className='peer-focus-visible:ring-1 peer-focus-visible:ring-red-500'>
                 <CheckCircleIcon
+                  aria-hidden='true'
                   className={mergeClassNames("aspect-square h-8 ", isCompleted ? "text-green-500" : "text-[#D3D4FF]")}
                 />
               </div>
-              <label htmlFor={taskId} className={mergeClassNames(isCompleted ? "line-through opacity-90" : "")}>
+              <label
+                htmlFor={taskId}
+                className={mergeClassNames("hover:cursor-pointer", isCompleted ? "line-through opacity-90" : "")}
+              >
                 {taskName}
               </label>
             </div>
