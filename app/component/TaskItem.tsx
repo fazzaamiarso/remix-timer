@@ -5,6 +5,7 @@ import { CheckCircleIcon, PencilIcon, TrashIcon } from "@heroicons/react/solid";
 import { mergeClassNames } from "~/utils/client";
 import { setStateType } from "~/types";
 import { Task } from "@prisma/client";
+import { flushSync } from "react-dom";
 
 type TaskItemProps = {
   id: string;
@@ -35,6 +36,7 @@ export function TaskItem({
   const itemFetcher = useFetcher();
   const mountedTime = useRef<number>(0);
   const editRef = useRef<HTMLInputElement>(null);
+  const initialFocusRef = useRef<HTMLButtonElement>(null);
   const toggleOnStopCount = useRef(0);
 
   const isCurrentlyEditing = editingTaskId === taskId;
@@ -47,12 +49,9 @@ export function TaskItem({
   }, [isCompleted, timerState]);
 
   useEffect(() => {
-    if (itemFetcher.submission?.formData.get("_action") === "edit") {
-      setEditingTaskId("");
-    }
-    if (itemFetcher.submission?.formData.get("_action") === "delete" && isActiveTask) {
-      setActiveTaskId("");
-    }
+    const fetcherAction = itemFetcher.submission?.formData.get("_action");
+    if (fetcherAction === "edit") setEditingTaskId("");
+    if (fetcherAction === "delete" && isActiveTask) setActiveTaskId("");
   }, [itemFetcher.submission, isActiveTask, setActiveTaskId, setEditingTaskId]);
 
   useEffect(() => {
@@ -139,14 +138,18 @@ export function TaskItem({
               name='editedTask'
               ref={editRef}
               className='w-full rounded-md bg-[#272851] text-white focus:border-white'
+              aria-label='Editing Task'
             />
             <div className='flex gap-2 self-end'>
               <button
                 className=' rounded-md px-3 py-1 text-sm font-semibold'
                 type='button'
-                onClick={() => setEditingTaskId("")}
+                onClick={() => {
+                  flushSync(() => setEditingTaskId(""));
+                  initialFocusRef.current?.focus();
+                }}
               >
-                Cancel
+                Cancel <span className='sr-only'>Edit task</span>
               </button>
               <button
                 className=' rounded-md bg-[#338bd3] px-3 py-1 text-sm  font-semibold text-white '
@@ -154,7 +157,7 @@ export function TaskItem({
                 value='edit'
                 type='submit'
               >
-                Save
+                Save <span className='sr-only'>your edit</span>
               </button>
             </div>
           </div>
@@ -183,7 +186,7 @@ export function TaskItem({
             </div>
             <div className='flex gap-3'>
               <button
-                aria-label='Delete Task'
+                aria-label={`Delete ${taskName}`}
                 className={`rounded-md p-1 text-white ${
                   itemFetcher.submission?.formData.get("_action") === "delete" ? "opacity-60" : ""
                 }`}
@@ -194,10 +197,11 @@ export function TaskItem({
                 <TrashIcon aria-hidden='true' className='h-5' />
               </button>
               <button
+                ref={initialFocusRef}
                 className='rounded-md  p-1 text-white'
                 type='button'
                 onClick={() => setEditingTaskId(taskId)}
-                aria-label='Edit Task'
+                aria-label={`Edit ${taskName}`}
               >
                 <PencilIcon aria-hidden='true' className='h-5' />
               </button>

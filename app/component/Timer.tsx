@@ -57,7 +57,10 @@ export default function Timer({ timerState, initialTime, setTimerState, setTimer
         >
           <span className='absolute top-0 left-0 h-full w-full translate-y-px rounded-md bg-[#1a65a1]' />
           <span className='relative block  -translate-y-1 rounded-md bg-[#3C7AAE] px-6 py-3  active:translate-y-0'>
-            {timerState === "running" ? "Pause" : "Start"}
+            {timerState === "running" ? "Pause" : "Start"}{" "}
+            <span className='sr-only'>
+              timer at {timer.minutes} minutes and {timer.seconds}
+            </span>
           </span>
         </button>
         <button
@@ -66,7 +69,8 @@ export default function Timer({ timerState, initialTime, setTimerState, setTimer
           className={mergeClassNames("py-3 px-1 font-semibold text-white")}
           hidden={timerState === "init" || timerState === "idle"}
         >
-          {timerState === "running" ? "End" : timerState === "paused" ? "Reset" : ""}
+          {timerState === "running" ? "End" : timerState === "paused" ? "Reset" : ""}{" "}
+          <span className='sr-only'>timer</span>
         </button>
       </div>
     </div>

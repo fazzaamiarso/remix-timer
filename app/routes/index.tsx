@@ -9,6 +9,7 @@ import { db } from "~/utils/prisma.server";
 import { createTask, deleteTask, editTask, toggleTask } from "~/utils/task.server";
 
 import TimerTabs from "~/component/Tabs";
+import { flushSync } from "react-dom";
 
 export const loader: LoaderFunction = async () => {
   const data = await db.task.findMany({ orderBy: { createdAt: "asc" } });
@@ -63,7 +64,7 @@ export default function Index() {
   };
 
   return (
-    <div className='mx-auto w-10/12 max-w-lg pb-16'>
+    <main className='mx-auto w-10/12 max-w-lg pb-16'>
       <TimerTabs
         selectedTabIdx={selectedTabIdx}
         handleTabsChange={handleTabsChange}
@@ -75,7 +76,7 @@ export default function Index() {
         <Tasks tasks={tasks} timerState={timerState} timerCaptured={timerCaptured} isBreak={isBreak} />
         <TaskForm />
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -83,6 +84,7 @@ function TaskForm() {
   const inputRef = useRef<HTMLInputElement>(null);
   const transition = useTransition();
   const [isOpen, setIsOpen] = useState(false);
+  const initialFocusRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (isOpen) inputRef.current?.focus();
@@ -112,7 +114,10 @@ function TaskForm() {
           <div className='flex gap-2 self-end'>
             <button
               type='button'
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                flushSync(() => setIsOpen(false));
+                initialFocusRef?.current?.focus();
+              }}
               className='rounded-md px-3 py-1 text-sm  font-semibold text-white  '
             >
               Cancel
@@ -129,6 +134,7 @@ function TaskForm() {
         </div>
       ) : (
         <button
+          ref={initialFocusRef}
           type='button'
           onClick={() => setIsOpen(true)}
           className='w-full rounded-md border-2 border-dashed border-white  px-1 py-2 font-semibold text-white hover:border-gray-300 '
