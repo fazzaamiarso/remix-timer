@@ -5,7 +5,7 @@ import { CheckCircleIcon, PencilIcon, TrashIcon } from "@heroicons/react/solid";
 import { mergeClassNames } from "~/utils/client";
 import { setStateType } from "~/types";
 import { Task } from "@prisma/client";
-import { flushSync } from "react-dom";
+import { usePreviousValue } from "~/hooks/use-previousvalue";
 
 type TaskItemProps = {
   id: string;
@@ -41,6 +41,7 @@ export function TaskItem({
 
   const isCurrentlyEditing = editingTaskId === taskId;
   const isActiveTask = activeTaskId === taskId;
+  const wasEditing = usePreviousValue(isCurrentlyEditing);
 
   useEffect(() => {
     if (timerState === "running") toggleOnStopCount.current = 0;
@@ -55,8 +56,9 @@ export function TaskItem({
   }, [itemFetcher.submission, isActiveTask, setActiveTaskId, setEditingTaskId]);
 
   useEffect(() => {
-    if (isCurrentlyEditing) editRef.current?.focus();
-  }, [isCurrentlyEditing]);
+    if (!wasEditing && isCurrentlyEditing) editRef.current?.focus();
+    if (wasEditing && !isCurrentlyEditing) initialFocusRef.current?.focus();
+  }, [isCurrentlyEditing, wasEditing]);
 
   const toggleCompleted = (e: ChangeEvent<HTMLFormElement>) => {
     if (e.target.id !== taskId || isBreak) return;
@@ -144,10 +146,7 @@ export function TaskItem({
               <button
                 className=' rounded-md px-3 py-1 text-sm font-semibold'
                 type='button'
-                onClick={() => {
-                  flushSync(() => setEditingTaskId(""));
-                  initialFocusRef.current?.focus();
-                }}
+                onClick={() => setEditingTaskId("")}
               >
                 Cancel <span className='sr-only'>Edit task</span>
               </button>

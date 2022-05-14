@@ -9,7 +9,7 @@ import { db } from "~/utils/prisma.server";
 import { createTask, deleteTask, editTask, toggleTask } from "~/utils/task.server";
 
 import TimerTabs from "~/component/Tabs";
-import { flushSync } from "react-dom";
+import { usePreviousValue } from "~/hooks/use-previousvalue";
 
 export const loader: LoaderFunction = async () => {
   const data = await db.task.findMany({ orderBy: { createdAt: "asc" } });
@@ -81,14 +81,17 @@ export default function Index() {
 }
 
 function TaskForm() {
-  const inputRef = useRef<HTMLInputElement>(null);
   const transition = useTransition();
   const [isOpen, setIsOpen] = useState(false);
   const initialFocusRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const wasOpened = usePreviousValue(isOpen);
 
   useEffect(() => {
-    if (isOpen) inputRef.current?.focus();
-  }, [isOpen]);
+    if (!wasOpened && isOpen) inputRef.current?.focus();
+    if (wasOpened && !isOpen) initialFocusRef.current?.focus();
+  }, [isOpen, wasOpened]);
 
   useEffect(() => {
     if (!inputRef.current) return;
@@ -114,10 +117,7 @@ function TaskForm() {
           <div className='flex gap-2 self-end'>
             <button
               type='button'
-              onClick={() => {
-                flushSync(() => setIsOpen(false));
-                initialFocusRef?.current?.focus();
-              }}
+              onClick={() => setIsOpen(false)}
               className='rounded-md px-3 py-1 text-sm  font-semibold text-white  '
             >
               Cancel
