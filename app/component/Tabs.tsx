@@ -1,15 +1,10 @@
 import { Tabs, TabList, Tab, TabPanels, TabPanel, useTabsContext } from "@reach/tabs";
 import { ReactNode } from "react";
+import { usePreferences } from "~/preferences-provider";
 import { TimerState } from "~/routes";
 import { setStateType } from "~/types";
 import { mergeClassNames } from "~/utils/client";
 import Timer from "./Timer";
-
-//TODO: move to persisted storage
-const USER_PREF = {
-  workTime: 25,
-  breakTime: 10
-};
 
 type TimerTabsProps = {
   selectedTabIdx: number;
@@ -26,6 +21,7 @@ export default function TimerTabs({
   setTimerState,
   handleTabsChange
 }: TimerTabsProps) {
+  const pref = usePreferences();
   return (
     <Tabs index={selectedTabIdx} onChange={handleTabsChange}>
       <TabList className='mx-auto flex w-full justify-center gap-4 rounded-md bg-[#272851] p-1 '>
@@ -34,22 +30,26 @@ export default function TimerTabs({
       </TabList>
       <TabPanels>
         <TabPanel>
-          <Timer
-            key={`${selectedTabIdx}0`}
-            setTimerState={setTimerState}
-            timerState={timerState}
-            initialTime={USER_PREF.workTime}
-            setTimerCaptured={setTimerCaptured}
-          />
+          {selectedTabIdx === 0 && (
+            <Timer
+              key={`${selectedTabIdx}0`}
+              setTimerState={setTimerState}
+              timerState={timerState}
+              initialTime={pref?.preferences.studyTime ?? 0}
+              setTimerCaptured={setTimerCaptured}
+            />
+          )}
         </TabPanel>
         <TabPanel>
-          <Timer
-            key={`${selectedTabIdx}1`}
-            setTimerState={setTimerState}
-            timerState={timerState}
-            initialTime={USER_PREF.breakTime}
-            setTimerCaptured={setTimerCaptured}
-          />
+          {selectedTabIdx === 1 && (
+            <Timer
+              key={`${selectedTabIdx}1`}
+              setTimerState={setTimerState}
+              timerState={timerState}
+              initialTime={pref?.preferences.breakTime ?? 0}
+              setTimerCaptured={setTimerCaptured}
+            />
+          )}
         </TabPanel>
       </TabPanels>
     </Tabs>

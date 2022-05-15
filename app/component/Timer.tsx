@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useInterval } from "~/hooks/use-interval";
+import { usePreviousValue } from "~/hooks/use-previousvalue";
 import { TimerState } from "~/routes";
 import { setStateType } from "~/types";
 import { mergeClassNames } from "~/utils/client";
@@ -13,10 +14,15 @@ type TimerProps = {
 
 export default function Timer({ timerState, initialTime, setTimerState, setTimerCaptured }: TimerProps) {
   const [timer, setTimer] = useState({ minutes: initialTime, seconds: 0 });
+  const prevTime = usePreviousValue(initialTime);
+
+  useEffect(() => {
+    if (prevTime !== initialTime && timerState !== "running") setTimer({ minutes: initialTime, seconds: 0 });
+  }, [initialTime, prevTime, timerState]);
 
   useInterval(
     () => {
-      if (timer.seconds === 0 && timer.minutes === 0) return resetTimer(); // TODO: create end logic
+      if (timer.seconds === 0 && timer.minutes === 0) return finishTimer();
       if (timer.seconds === 0) return setTimer((prev) => ({ minutes: prev.minutes - 1, seconds: 59 }));
       else
         setTimer((prev) => ({
@@ -26,6 +32,12 @@ export default function Timer({ timerState, initialTime, setTimerState, setTimer
     },
     timerState === "running" ? 1000 : null
   );
+
+  const finishTimer = () => {
+    setTimerState("idle");
+    setTimer({ minutes: initialTime, seconds: 0 });
+    setTimerCaptured({ start: 0, stop: 0 });
+  };
 
   const resetTimer = () => {
     if (!confirm("Are you sure want to end the session?")) return;
