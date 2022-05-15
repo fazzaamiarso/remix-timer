@@ -5,7 +5,7 @@ import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration } from "@re
 import styles from "./styles/app.css";
 import dialogStyles from "@reach/dialog/styles.css";
 import { FormEvent, useState } from "react";
-import { PreferencesProvider, usePreferences } from "./preferences-provider";
+import { PreferencesProvider, usePreferences } from "./utils/preferences-provider";
 
 export function links() {
   return [
