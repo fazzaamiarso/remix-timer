@@ -1,6 +1,6 @@
 import { Tabs, TabList, Tab, TabPanels, TabPanel, useTabsContext } from "@reach/tabs";
 import { ReactNode } from "react";
-import { usePreferences } from "~/preferences-provider";
+import { usePreferences } from "~/utils/preferences-provider";
 import { TimerState } from "~/routes";
 import { setStateType } from "~/types";
 import { mergeClassNames } from "~/utils/client";
