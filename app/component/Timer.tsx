@@ -1,97 +1,88 @@
-import { useRef, useEffect, useState, ChangeEvent } from "react";
+import { useEffect, useState } from "react";
+import { useInterval } from "~/hooks/use-interval";
+import { usePreviousValue } from "~/hooks/use-previousvalue";
+import { TimerState } from "~/routes";
+import { setStateType } from "~/types";
+import { mergeClassNames } from "~/utils/client";
 
-function useInterval(callback: () => void, delay: null | number) {
-  const savedCallback = useRef<typeof callback>();
+type TimerProps = {
+  initialTime: number;
+  timerState: TimerState;
+  setTimerState: setStateType<TimerState>;
+  setTimerCaptured: setStateType<{ start: number; stop: number }>;
+};
 
-  // Remember the latest callback.
+export default function Timer({ timerState, initialTime, setTimerState, setTimerCaptured }: TimerProps) {
+  const [timer, setTimer] = useState({ minutes: initialTime, seconds: 0 });
+  const prevTime = usePreviousValue(initialTime);
+
   useEffect(() => {
-    savedCallback.current = callback;
-  }, [callback]);
-
-  // Set up the interval.
-  useEffect(() => {
-    function tick() {
-      if (!savedCallback.current) return;
-      savedCallback.current();
-    }
-    if (delay !== null) {
-      let id = setInterval(tick, delay);
-      return () => clearInterval(id);
-    }
-  }, [delay]);
-}
-
-export default function Timer({ initialTime }: { initialTime: number }) {
-  const [chosenTime, setChosenTime] = useState(initialTime);
-  const [time, setTime] = useState({ minutes: chosenTime, seconds: 0 });
-  const [start, setStart] = useState(false);
+    if (prevTime !== initialTime && timerState !== "running") setTimer({ minutes: initialTime, seconds: 0 });
+  }, [initialTime, prevTime, timerState]);
 
   useInterval(
     () => {
-      if (time.seconds === 0 && time.minutes === 0) return clearTimer();
-      if (time.seconds === 0)
-        return setTime((prev) => ({ minutes: prev.minutes - 1, seconds: 59 }));
+      if (timer.seconds === 0 && timer.minutes === 0) return finishTimer();
+      if (timer.seconds === 0) return setTimer((prev) => ({ minutes: prev.minutes - 1, seconds: 59 }));
       else
-        setTime((prev) => ({
+        setTimer((prev) => ({
           minutes: prev.minutes,
-          seconds: prev.seconds - 1,
+          seconds: prev.seconds - 1
         }));
     },
-    start ? 1000 : null
+    timerState === "running" ? 1000 : null
   );
-  const changeTime = (e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target || start) return;
 
-    if (Number(e.target.value) > 60) return;
-    setChosenTime(Number(e.target.value));
-    setTime({ minutes: Number(e.target.value), seconds: 0 });
+  const finishTimer = () => {
+    setTimerState("idle");
+    setTimer({ minutes: initialTime, seconds: 0 });
+    setTimerCaptured({ start: 0, stop: 0 });
   };
 
-  const startTimer = () => {
-    setStart(true);
+  const resetTimer = () => {
+    if (!confirm("Are you sure want to end the session?")) return;
+    setTimerState("idle");
+    setTimer({ minutes: initialTime, seconds: 0 });
+    setTimerCaptured({ start: 0, stop: 0 });
   };
-  const pauseTimer = () => {
-    setStart(false);
-  };
-  const clearTimer = () => {
-    setStart(false);
-    setTime({ minutes: chosenTime, seconds: 0 });
+
+  const toggleTimer = () => {
+    if (timerState === "running") {
+      setTimerState("paused");
+      setTimerCaptured((prev) => ({ ...prev, stop: Date.now() }));
+      return;
+    }
+    setTimerState("running");
+    setTimerCaptured({ start: Date.now(), stop: 0 });
   };
 
   return (
-    <div className="mx-auto space-y-4">
-      <div className="text-xl">{`${String(time.minutes).padStart(
-        2,
-        "0"
-      )}:${String(time.seconds).padStart(2, "0")}`}</div>
-      <input
-        type="text"
-        value={chosenTime}
-        onChange={changeTime}
-        pattern="[0-9]{2}"
-        maxLength={2}
-      />
-      <div className="flex gap-3 ">
-        <button
-          type="button"
-          onClick={startTimer}
-          className="py-3 px-1 bg-pink-500"
+    <div className='mx-auto my-8 flex flex-col items-center space-y-8 rounded-md bg-[#43446A] py-8'>
+      <div className='text-7xl font-bold text-white'>{`${String(timer.minutes).padStart(2, "0")}:${String(
+        timer.seconds
+      ).padStart(2, "0")}`}</div>
+      <div className='flex gap-3 '>
+        <button //TODO: fix the button lift effect
+          type='button'
+          onClick={toggleTimer}
+          className='relative w-max bg-transparent  font-semibold text-white'
         >
-          Start
+          <span className='absolute top-0 left-0 h-full w-full translate-y-px rounded-md bg-[#1a65a1]' />
+          <span className='relative block  -translate-y-1 rounded-md bg-[#3C7AAE] px-6 py-3  active:translate-y-0'>
+            {timerState === "running" ? "Pause" : "Start"}{" "}
+            <span className='sr-only'>
+              timer at {timer.minutes} minutes and {timer.seconds}
+            </span>
+          </span>
         </button>
         <button
-          type="button"
-          onClick={pauseTimer}
-          className="py-3 px-1 ring-pink-500 ring-1"
+          type='button'
+          onClick={resetTimer}
+          className={mergeClassNames("py-3 px-1 font-semibold text-white")}
+          hidden={timerState === "init" || timerState === "idle"}
         >
-          Pause
-        </button>
-        <button
-          type="button"
-          onClick={clearTimer}
-          className="py-3 px-1 text-pink-500"
-        >
-          Stop
+          {timerState === "running" ? "End" : timerState === "paused" ? "Reset" : ""}{" "}
+          <span className='sr-only'>timer</span>
         </button>
       </div>
     </div>
