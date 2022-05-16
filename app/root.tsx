@@ -55,7 +55,7 @@ const Header = () => {
   };
 
   return (
-    <header className='mx-auto flex max-w-lg  justify-between pt-8 pb-12 '>
+    <header className='mx-auto flex w-10/12 justify-between  pt-8 pb-12 sm:max-w-lg '>
       <h1 className='text-lg font-bold text-white'>POMER</h1>
       <div className='flex items-center gap-4'>
         <button className='rounded-md bg-[#3C7AAE] px-3 py-1 text-white' type='button'>
