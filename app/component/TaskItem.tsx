@@ -1,6 +1,6 @@
 import { useFetcher } from "@remix-run/react";
 import React, { useRef, useEffect, ChangeEvent, MouseEvent } from "react";
-import { TimerState } from "~/routes";
+import { TimerState } from "~/routes/app";
 import { CheckCircleIcon, PencilIcon, TrashIcon } from "@heroicons/react/solid";
 import { mergeClassNames } from "~/utils/client";
 import { setStateType } from "~/types";

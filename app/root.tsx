@@ -1,7 +1,7 @@
 import { CogIcon, XIcon } from "@heroicons/react/outline";
 import Dialog from "@reach/dialog";
-import type { MetaFunction } from "@remix-run/node";
-import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/react";
+import { MetaFunction } from "@remix-run/node";
+import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration, useNavigate } from "@remix-run/react";
 import styles from "./styles/app.css";
 import dialogStyles from "@reach/dialog/styles.css";
 import { FormEvent, useState } from "react";
@@ -44,6 +44,9 @@ const Header = () => {
   const closeDialog = () => setIsOpen(false);
   const openDialog = () => setIsOpen(true);
   const { updatePreferences, preferences } = usePreferences();
+  const navigate = useNavigate();
+
+  const openLogin = () => navigate("app/login");
 
   const submitHandler = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -58,7 +61,7 @@ const Header = () => {
     <header className='mx-auto flex w-10/12 justify-between  pt-8 pb-12 sm:max-w-lg '>
       <h1 className='text-lg font-bold text-white'>POMER</h1>
       <div className='flex items-center gap-4'>
-        <button className='rounded-md bg-[#3C7AAE] px-3 py-1 text-white' type='button'>
+        <button className='rounded-md bg-[#3C7AAE] px-3 py-1 text-white' type='button' onClick={openLogin}>
           Login
         </button>
         <button className='p-1 text-white' type='button' onClick={openDialog} aria-label='open settings'>

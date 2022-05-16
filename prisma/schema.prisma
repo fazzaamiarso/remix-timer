@@ -17,4 +17,15 @@ model Task {
   taskName  String
   isCompleted Boolean @default(false)
   completionTime Int @default(0)
+  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String
+}
+
+model User {
+  id           String   @id @default(uuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  username     String   @unique
+  passwordHash String
+  tasks       Task[]
 }

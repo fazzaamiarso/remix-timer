@@ -1,6 +1,6 @@
 import { Task } from "@prisma/client";
 import { useState } from "react";
-import { TimerState } from "~/routes";
+import { TimerState } from "~/routes/app";
 import { TaskItem } from "./TaskItem";
 
 type TasksProps = {

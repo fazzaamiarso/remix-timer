@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useInterval } from "~/hooks/use-interval";
 import { usePreviousValue } from "~/hooks/use-previousvalue";
-import { TimerState } from "~/routes";
+import { TimerState } from "~/routes/app";
 import { setStateType } from "~/types";
 import { mergeClassNames } from "~/utils/client";
 
