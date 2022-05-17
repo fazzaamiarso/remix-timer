@@ -2,6 +2,7 @@ import { CogIcon, XIcon } from "@heroicons/react/outline";
 import Dialog from "@reach/dialog";
 import { json, LoaderFunction, MetaFunction } from "@remix-run/node";
 import {
+  Form,
   Links,
   LiveReload,
   Meta,
@@ -15,7 +16,7 @@ import styles from "./styles/app.css";
 import dialogStyles from "@reach/dialog/styles.css";
 import { FormEvent, useState } from "react";
 import { PreferencesProvider, usePreferences } from "./utils/preferences-provider";
-import { createUserSession, generateRandomString, getUserId } from "./utils/session.server";
+import { createAnonymousUser, createUserSession, generateRandomString, getUserId } from "./utils/session.server";
 
 export function links() {
   return [
@@ -33,7 +34,8 @@ export const loader: LoaderFunction = async ({ request }) => {
   const userData = await getUserId(request);
   if (!userData) {
     const randomString = generateRandomString();
-    const headers = await createUserSession({ userId: randomString, isAnonymous: true });
+    await createAnonymousUser(randomString);
+    const headers = await createUserSession({ userId: randomString, isAnonymous: true }, request);
     return json({ userId: randomString, isAnonymous: true }, headers);
   }
   return json({ userId: userData.userId, isAnonymous: userData.isAnonymous });
@@ -83,9 +85,17 @@ const Header = ({ isAnonymous, userId }: { isAnonymous: boolean; userId: string 
       <h1 className='text-lg font-bold text-white'>POMER</h1>
       <div className='flex items-center gap-4'>
         <span className='text-white'>{userId}</span>
-        <button className='rounded-md bg-[#3C7AAE] px-3 py-1 text-white' type='button' onClick={openLogin}>
-          {isAnonymous ? "Login" : "Logout"}
-        </button>
+        {isAnonymous ? (
+          <button className='rounded-md bg-[#3C7AAE] px-3 py-1 text-white' type='button' onClick={openLogin}>
+            Login
+          </button>
+        ) : (
+          <Form action='/app/logout' method='post'>
+            <button className='rounded-md bg-[#3C7AAE] px-3 py-1 text-white' type='submit'>
+              Logout
+            </button>
+          </Form>
+        )}
         <button className='p-1 text-white' type='button' onClick={openDialog} aria-label='open settings'>
           <CogIcon aria-hidden='true' className='h-6' />
         </button>

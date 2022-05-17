@@ -1,5 +1,5 @@
 import { db } from "~/utils/prisma.server";
-import { createCookieSessionStorage, json, redirect } from "@remix-run/node";
+import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import { compare } from "bcryptjs";
 
 const sessionSecret = process.env.SESSION_SECRET;
@@ -10,7 +10,7 @@ const WEEK_IN_SECONDS = 60 * 60 * 7;
 const { commitSession, destroySession, getSession } = createCookieSessionStorage({
   cookie: {
     name: "auth_session",
-    secrets: [sessionSecret], //TODO: Set secrets in netlify
+    secrets: [sessionSecret],
     sameSite: "lax",
     secure: true,
     httpOnly: true,
@@ -23,8 +23,8 @@ export const getUserSession = async (request: Request) => {
 };
 
 type SessionData = { userId: string; isAnonymous: boolean };
-export const createUserSession = async ({ userId, isAnonymous }: SessionData) => {
-  const session = await getSession();
+export const createUserSession = async ({ userId, isAnonymous }: SessionData, request: Request) => {
+  const session = (await getUserSession(request)) ?? (await getSession());
   session.set("userId", userId);
   session.set("isAnonymous", isAnonymous);
   return { headers: { "Set-Cookie": await commitSession(session) } } as ResponseInit;
@@ -32,7 +32,7 @@ export const createUserSession = async ({ userId, isAnonymous }: SessionData) =>
 
 export const destroyUserSession = async (request: Request) => {
   const session = await getUserSession(request);
-  await destroySession(session);
+  return redirect("/app", { headers: { "Set-Cookie": await destroySession(session) } });
 };
 export const generateRandomString = () => {
   const ALPHABET = "abcdefghijklmnopqrstuvwxyz";
@@ -67,4 +67,20 @@ export const login = async ({ username, password }: LoginData) => {
   if (!isPasswordMatched) return null;
 
   return { id: user.id, username };
+};
+
+export const deleteUser = async (userId: string) => {
+  return db.user.delete({ where: { id: userId } });
+};
+
+export const createAnonymousUser = async (userId: string) => {
+  const anonymousUser = await db.user.create({
+    data: {
+      id: userId,
+      username: "anonymous",
+      passwordHash: "anonymous"
+    }
+  });
+
+  return { id: anonymousUser.id };
 };

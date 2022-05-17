@@ -2,7 +2,7 @@ import { XIcon } from "@heroicons/react/outline";
 import Dialog from "@reach/dialog";
 import { ActionFunction, json, redirect } from "@remix-run/node";
 import { Form, useActionData, useNavigate } from "@remix-run/react";
-import { createUserSession, destroyUserSession, login } from "~/utils/session.server";
+import { createUserSession, deleteUser, getUserId, login } from "~/utils/session.server";
 
 type LoginError = { message: string };
 export const action: ActionFunction = async ({ request }) => {
@@ -16,8 +16,10 @@ export const action: ActionFunction = async ({ request }) => {
   const user = await login({ username, password });
   if (!user) return json({ message: "Incorrect credentials combination!" });
 
-  await destroyUserSession(request);
-  const headers = await createUserSession({ userId: user.id, isAnonymous: false });
+  const anonymousUser = await getUserId(request);
+  if (!anonymousUser) throw Error("Anonymous user should be set!");
+  await deleteUser(anonymousUser.userId);
+  const headers = await createUserSession({ userId: user.id, isAnonymous: false }, request);
   return redirect("/app", headers);
 };
 

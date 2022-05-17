@@ -11,9 +11,10 @@ type TasksProps = {
     stop: number;
   };
   isBreak: boolean;
+  isAnonymous: boolean;
 };
 
-export default function Tasks({ tasks, timerCaptured, timerState, isBreak }: TasksProps) {
+export default function Tasks({ tasks, timerCaptured, timerState, isBreak, isAnonymous }: TasksProps) {
   const [activeTaskId, setActiveTaskId] = useState<Task["id"]>("");
   const [editingTaskId, setEditingTaskId] = useState<Task["id"]>("");
 
@@ -23,6 +24,11 @@ export default function Tasks({ tasks, timerCaptured, timerState, isBreak }: Tas
       <div className='flex w-full items-center justify-center py-4'>
         <p className='text-lg font-semibold text-white'># {activeTaskName ?? "No active task"}</p>
       </div>
+      {isAnonymous ? (
+        <div className='ml-auto text-white'>
+          <span>{tasks.length}/5</span>
+        </div>
+      ) : null}
       <ul className='space-y-4 pb-4'>
         {tasks.length ? (
           tasks.map((task) => {

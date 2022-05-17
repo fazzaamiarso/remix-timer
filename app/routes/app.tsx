@@ -54,12 +54,14 @@ export const action: ActionFunction = async ({ request }) => {
 
 export type TimerState = "idle" | "paused" | "running" | "init";
 export default function App() {
-  const { data: tasks } = useLoaderData<{ data: Task[]; isAnonymous: boolean; userId: string }>();
+  const { data: tasks, isAnonymous } = useLoaderData<{ data: Task[]; isAnonymous: boolean; userId: string }>();
 
   const [isBreak, setIsBreak] = useState(false); //switch to state machine approach, maybe?
   const [timerState, setTimerState] = useState<TimerState>("init");
   const [timerCaptured, setTimerCaptured] = useState({ start: 0, stop: 0 });
   const [selectedTabIdx, setSelectedTabIdx] = useState(0);
+
+  const isLimitReached = isAnonymous && tasks.length === 5;
 
   const handleTabsChange = (index: number) => {
     if (
@@ -82,15 +84,21 @@ export default function App() {
         timerState={timerState}
       />
       <div className=''>
-        <Tasks tasks={tasks} timerState={timerState} timerCaptured={timerCaptured} isBreak={isBreak} />
-        <TaskForm />
+        <Tasks
+          tasks={tasks}
+          timerState={timerState}
+          timerCaptured={timerCaptured}
+          isBreak={isBreak}
+          isAnonymous={isAnonymous}
+        />
+        <TaskForm isLimitReached={isLimitReached} />
       </div>
       <Outlet />
     </main>
   );
 }
 
-function TaskForm() {
+function TaskForm({ isLimitReached }: { isLimitReached: boolean }) {
   const transition = useTransition();
   const [isOpen, setIsOpen] = useState(false);
   const initialFocusRef = useRef<HTMLButtonElement>(null);
@@ -98,6 +106,9 @@ function TaskForm() {
 
   const wasOpened = usePreviousValue(isOpen);
 
+  useEffect(() => {
+    if (isLimitReached && isOpen) return setIsOpen(false);
+  }, [isOpen, isLimitReached]);
   useEffect(() => {
     if (!wasOpened && isOpen) inputRef.current?.focus();
     if (wasOpened && !isOpen) initialFocusRef.current?.focus();
@@ -144,10 +155,11 @@ function TaskForm() {
         </div>
       ) : (
         <button
+          disabled={isLimitReached}
           ref={initialFocusRef}
           type='button'
           onClick={() => setIsOpen(true)}
-          className='w-full rounded-md border-2 border-dashed border-white  px-1 py-2 font-semibold text-white hover:border-gray-300 '
+          className='w-full rounded-md border-2 border-dashed border-white px-1  py-2 font-semibold text-white hover:border-gray-300 disabled:border-gray-100 disabled:text-gray-100 '
         >
           Add task
         </button>
