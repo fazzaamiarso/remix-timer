@@ -2,7 +2,7 @@ import { XIcon } from "@heroicons/react/outline";
 import Dialog from "@reach/dialog";
 import { ActionFunction, json, redirect } from "@remix-run/node";
 import { Form, useActionData, useNavigate } from "@remix-run/react";
-import { login } from "~/utils/session.server";
+import { createUserSession, destroyUserSession, login } from "~/utils/session.server";
 
 type LoginError = { message: string };
 export const action: ActionFunction = async ({ request }) => {
@@ -16,7 +16,9 @@ export const action: ActionFunction = async ({ request }) => {
   const user = await login({ username, password });
   if (!user) return json({ message: "Incorrect credentials combination!" });
 
-  return redirect("/");
+  await destroyUserSession(request);
+  const headers = await createUserSession({ userId: user.id, isAnonymous: false });
+  return redirect("/app", headers);
 };
 
 export default function Login() {
@@ -41,7 +43,7 @@ export default function Login() {
       </div>
       <Form className='flex flex-col gap-6' method='post'>
         {actionData?.message ? (
-          <div className='rounded-md bg-red-100 px-2 py-3 text-red-500  '>{actionData.message}</div>
+          <div className='rounded-md bg-red-100 px-4 py-3 text-red-500  '>{actionData.message}</div>
         ) : null}
         <div className='flex flex-col '>
           <label htmlFor='username' className='font-semibold'>

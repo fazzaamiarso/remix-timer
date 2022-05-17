@@ -1,11 +1,21 @@
 import { CogIcon, XIcon } from "@heroicons/react/outline";
 import Dialog from "@reach/dialog";
-import { MetaFunction } from "@remix-run/node";
-import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration, useNavigate } from "@remix-run/react";
+import { json, LoaderFunction, MetaFunction } from "@remix-run/node";
+import {
+  Links,
+  LiveReload,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  useLoaderData,
+  useNavigate
+} from "@remix-run/react";
 import styles from "./styles/app.css";
 import dialogStyles from "@reach/dialog/styles.css";
 import { FormEvent, useState } from "react";
 import { PreferencesProvider, usePreferences } from "./utils/preferences-provider";
+import { createUserSession, generateRandomString, getUserId } from "./utils/session.server";
 
 export function links() {
   return [
@@ -19,7 +29,18 @@ export const meta: MetaFunction = () => ({
   viewport: "width=device-width,initial-scale=1"
 });
 
+export const loader: LoaderFunction = async ({ request }) => {
+  const userData = await getUserId(request);
+  if (!userData) {
+    const randomString = generateRandomString();
+    const headers = await createUserSession({ userId: randomString, isAnonymous: true });
+    return json({ userId: randomString, isAnonymous: true }, headers);
+  }
+  return json({ userId: userData.userId, isAnonymous: userData.isAnonymous });
+};
+
 export default function App() {
+  const { isAnonymous, userId } = useLoaderData<{ userId: string; isAnonymous: boolean }>();
   return (
     <html lang='en'>
       <head>
@@ -28,7 +49,7 @@ export default function App() {
       </head>
       <body className='bg-primary font-rubik'>
         <PreferencesProvider>
-          <Header />
+          <Header isAnonymous={isAnonymous} userId={userId} />
           <Outlet />
         </PreferencesProvider>
         <ScrollRestoration />
@@ -39,7 +60,7 @@ export default function App() {
   );
 }
 
-const Header = () => {
+const Header = ({ isAnonymous, userId }: { isAnonymous: boolean; userId: string }) => {
   const [isOpen, setIsOpen] = useState(false);
   const closeDialog = () => setIsOpen(false);
   const openDialog = () => setIsOpen(true);
@@ -61,8 +82,9 @@ const Header = () => {
     <header className='mx-auto flex w-10/12 justify-between  pt-8 pb-12 sm:max-w-lg '>
       <h1 className='text-lg font-bold text-white'>POMER</h1>
       <div className='flex items-center gap-4'>
+        <span className='text-white'>{userId}</span>
         <button className='rounded-md bg-[#3C7AAE] px-3 py-1 text-white' type='button' onClick={openLogin}>
-          Login
+          {isAnonymous ? "Login" : "Logout"}
         </button>
         <button className='p-1 text-white' type='button' onClick={openDialog} aria-label='open settings'>
           <CogIcon aria-hidden='true' className='h-6' />

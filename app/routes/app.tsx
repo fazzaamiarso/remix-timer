@@ -10,10 +10,16 @@ import { createTask, deleteTask, editTask, toggleTask } from "~/utils/task.serve
 
 import TimerTabs from "~/component/Tabs";
 import { usePreviousValue } from "~/hooks/use-previousvalue";
+import { getUserId } from "~/utils/session.server";
 
-export const loader: LoaderFunction = async () => {
-  const data = await db.task.findMany({ orderBy: { createdAt: "asc" } });
-  return data;
+export const loader: LoaderFunction = async ({ request }) => {
+  const userData = await getUserId(request);
+  if (!userData) {
+    return json({ data: [], userId: "", isAnonymous: true });
+  }
+
+  const data = await db.task.findMany({ where: { userId: userData.userId }, orderBy: { createdAt: "asc" } });
+  return json({ data, userId: userData.userId, isAnonymous: userData.isAnonymous });
 };
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
@@ -24,6 +30,9 @@ export const action: ActionFunction = async ({ request }) => {
   const isCompleted = Boolean(formData.get("isCompleted"));
   const elapsedTime = Number(formData.get("elapsedTime"));
 
+  const userData = await getUserId(request);
+  if (!userData) throw Error("Anonymous Session should been set!");
+
   if (typeof actionType !== "string") return json({ message: "Action is not a string" }, 400);
   if (taskId && typeof taskId !== "string") return json({ message: "TaskId is not a string" }, 400);
   if (editedTask && typeof editedTask !== "string") return json({ message: "EditedTask is not a string" }, 400);
@@ -31,7 +40,7 @@ export const action: ActionFunction = async ({ request }) => {
   switch (actionType) {
     case "create":
       if (typeof newTask !== "string") return json({ message: "Please insert a task!" }, 400);
-      return await createTask(newTask);
+      return await createTask(userData.userId, newTask);
     case "delete":
       if (taskId) return await deleteTask(taskId);
     case "toggleTask":
@@ -44,8 +53,8 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export type TimerState = "idle" | "paused" | "running" | "init";
-export default function Index() {
-  const tasks = useLoaderData<Task[]>();
+export default function App() {
+  const { data: tasks } = useLoaderData<{ data: Task[]; isAnonymous: boolean; userId: string }>();
 
   const [isBreak, setIsBreak] = useState(false); //switch to state machine approach, maybe?
   const [timerState, setTimerState] = useState<TimerState>("init");

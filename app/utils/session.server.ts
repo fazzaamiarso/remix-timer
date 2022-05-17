@@ -1,9 +1,11 @@
 import { db } from "~/utils/prisma.server";
-import { createCookieSessionStorage } from "@remix-run/node";
+import { createCookieSessionStorage, json, redirect } from "@remix-run/node";
 import { compare } from "bcryptjs";
 
 const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret) throw Error("Please set a session secret");
+
+const WEEK_IN_SECONDS = 60 * 60 * 7;
 
 const { commitSession, destroySession, getSession } = createCookieSessionStorage({
   cookie: {
@@ -11,9 +13,46 @@ const { commitSession, destroySession, getSession } = createCookieSessionStorage
     secrets: [sessionSecret], //TODO: Set secrets in netlify
     sameSite: "lax",
     secure: true,
-    httpOnly: true
+    httpOnly: true,
+    maxAge: WEEK_IN_SECONDS
   }
 });
+
+export const getUserSession = async (request: Request) => {
+  return await getSession(request.headers.get("Cookie"));
+};
+
+type SessionData = { userId: string; isAnonymous: boolean };
+export const createUserSession = async ({ userId, isAnonymous }: SessionData) => {
+  const session = await getSession();
+  session.set("userId", userId);
+  session.set("isAnonymous", isAnonymous);
+  return { headers: { "Set-Cookie": await commitSession(session) } } as ResponseInit;
+};
+
+export const destroyUserSession = async (request: Request) => {
+  const session = await getUserSession(request);
+  await destroySession(session);
+};
+export const generateRandomString = () => {
+  const ALPHABET = "abcdefghijklmnopqrstuvwxyz";
+  const NUMBERS = "0123456789";
+  let randomString = "";
+  for (let i = 0; i < 8; i++) {
+    if (Math.random() > 0.45) randomString += ALPHABET[Math.floor(Math.random() * 25)];
+    else randomString += NUMBERS[Math.floor(Math.random() * 9)];
+  }
+  return randomString;
+};
+
+export const getUserId = async (request: Request) => {
+  const session = await getUserSession(request);
+  const userId = session.get("userId");
+  const isAnonymous = JSON.parse(session.get("isAnonymous") ?? "false");
+  if (typeof userId !== "string" || !userId || typeof isAnonymous !== "boolean") return null;
+
+  return { userId, isAnonymous };
+};
 
 type LoginData = {
   username: string;

@@ -1,9 +1,10 @@
 import type { Task } from "@prisma/client";
 import { db } from "./prisma.server";
 
-export const createTask = (taskName: Task["taskName"]) => {
+export const createTask = (userId: Task["userId"], taskName: Task["taskName"]) => {
   return db.task.create({
     data: {
+      userId,
       taskName
     }
   });
