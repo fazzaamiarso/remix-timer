@@ -62,8 +62,7 @@ export function TaskItem({
   };
 
   const handleSetActive = (e: MouseEvent<HTMLLIElement>) => {
-    if (!(e.target instanceof HTMLLIElement)) return;
-    setActiveTaskId(taskId);
+    if (e.target instanceof HTMLLIElement || e.target instanceof HTMLFormElement) setActiveTaskId(taskId);
   };
 
   return (
@@ -106,7 +105,7 @@ export function TaskItem({
           </div>
         ) : (
           <>
-            <div className='relative flex items-center gap-4'>
+            <div className=' relative flex items-center gap-4'>
               <input
                 type='checkbox'
                 id={taskId}

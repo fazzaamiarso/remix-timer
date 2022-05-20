@@ -16,7 +16,13 @@ import styles from "./styles/app.css";
 import dialogStyles from "@reach/dialog/styles.css";
 import { FormEvent, useState } from "react";
 import { PreferencesProvider, usePreferences } from "./utils/preferences-provider";
-import { createAnonymousUser, createUserSession, generateRandomString, getUserId } from "./utils/session.server";
+import {
+  createAnonymousUser,
+  createUserSession,
+  findUser,
+  generateRandomString,
+  getUserId
+} from "./utils/session.server";
 
 export function links() {
   return [
@@ -38,11 +44,12 @@ export const loader: LoaderFunction = async ({ request }) => {
     const headers = await createUserSession({ userId: randomString, isAnonymous: true }, request);
     return redirect(request.url, headers);
   }
-  return json({ userId: userData.userId, isAnonymous: userData.isAnonymous });
+  const username = (await findUser(userData.userId))?.username;
+  return json({ username, isAnonymous: userData.isAnonymous });
 };
 
 export default function App() {
-  const { isAnonymous, userId } = useLoaderData<{ userId: string; isAnonymous: boolean }>();
+  const { isAnonymous, username } = useLoaderData<{ username: string; isAnonymous: boolean }>();
   return (
     <html lang='en'>
       <head>
@@ -51,7 +58,7 @@ export default function App() {
       </head>
       <body className='bg-primary font-rubik'>
         <PreferencesProvider>
-          <Header isAnonymous={isAnonymous} userId={userId} />
+          <Header isAnonymous={isAnonymous} username={username} />
           <Outlet />
         </PreferencesProvider>
         <ScrollRestoration />
@@ -62,7 +69,7 @@ export default function App() {
   );
 }
 
-const Header = ({ isAnonymous, userId }: { isAnonymous: boolean; userId: string }) => {
+const Header = ({ isAnonymous, username }: { isAnonymous: boolean; username: string }) => {
   const [isOpen, setIsOpen] = useState(false);
   const closeDialog = () => setIsOpen(false);
   const openDialog = () => setIsOpen(true);
@@ -84,7 +91,7 @@ const Header = ({ isAnonymous, userId }: { isAnonymous: boolean; userId: string 
     <header className='mx-auto flex w-10/12 justify-between  pt-8 pb-12 sm:max-w-lg '>
       <h1 className='text-lg font-bold text-white'>POMER</h1>
       <div className='flex items-center gap-4'>
-        <span className='text-white'>{userId}</span>
+        {isAnonymous ? null : <div className='text-white '>Hello, {username}!</div>}
         {isAnonymous ? (
           <button className='rounded-md bg-[#3C7AAE] px-3 py-1 text-white' type='button' onClick={openLogin}>
             Login

@@ -40,13 +40,13 @@ export const action: ActionFunction = async ({ request }) => {
   switch (actionType) {
     case "create":
       if (typeof newTask !== "string") return json({ message: "Please insert a task!" }, 400);
-      await createTask(userData.userId, newTask);
+      return await createTask(userData.userId, newTask);
     case "delete":
-      if (taskId) await deleteTask(taskId);
+      if (taskId) return await deleteTask(taskId);
     case "toggleTask":
-      if (taskId) await toggleTask(taskId, isCompleted);
+      if (taskId) return await toggleTask(taskId, isCompleted);
     case "edit":
-      if (taskId && editedTask) await editTask(taskId, editedTask);
+      if (taskId && editedTask) return await editTask(taskId, editedTask);
     default:
       throw new Error(`Unhandled action: ${actionType}`);
   }

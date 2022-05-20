@@ -75,6 +75,10 @@ export const createAnonymousUser = async (userId: string) => {
   return { id: anonymousUser.id };
 };
 
+export const findUser = async (userId: string) => {
+  return await db.user.findFirst({ where: { id: userId } });
+};
+
 export function generateRandomString() {
   const ALPHABET = "abcdefghijklmnopqrstuvwxyz";
   const NUMBERS = "0123456789";
