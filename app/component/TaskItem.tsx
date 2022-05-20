@@ -29,16 +29,16 @@ export function TaskItem({
   const itemFetcher = useFetcher();
   const editRef = useRef<HTMLInputElement>(null);
   const initialFocusRef = useRef<HTMLButtonElement>(null);
+  const fetcherAction = itemFetcher.submission?.formData.get("_action");
 
   const isCurrentlyEditing = editingTaskId === taskId;
   const isActiveTask = activeTaskId === taskId;
   const wasEditing = usePreviousValue(isCurrentlyEditing);
 
   useEffect(() => {
-    const fetcherAction = itemFetcher.submission?.formData.get("_action");
     if (fetcherAction === "edit") setEditingTaskId("");
     if (fetcherAction === "delete" && isActiveTask) setActiveTaskId("");
-  }, [itemFetcher.submission, isActiveTask, setActiveTaskId, setEditingTaskId]);
+  }, [fetcherAction, isActiveTask, setActiveTaskId, setEditingTaskId]);
 
   useEffect(() => {
     if (!wasEditing && isCurrentlyEditing) editRef.current?.focus();
@@ -130,9 +130,10 @@ export function TaskItem({
             <div className='flex gap-3'>
               <button
                 aria-label={`Delete ${taskName}`}
-                className={`rounded-md p-1 text-white ${
+                className={mergeClassNames(
+                  "rounded-md p-1 text-white",
                   itemFetcher.submission?.formData.get("_action") === "delete" ? "opacity-60" : ""
-                }`}
+                )}
                 name='_action'
                 value='delete'
                 type='submit'

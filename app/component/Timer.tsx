@@ -57,11 +57,7 @@ export default function Timer({ timerState, initialTime, setTimerState }: TimerP
         timer.seconds
       ).padStart(2, "0")}`}</div>
       <div className='flex gap-3 '>
-        <button //TODO: fix the button lift effect
-          type='button'
-          onClick={toggleTimer}
-          className='relative w-max bg-transparent  font-semibold text-white'
-        >
+        <button type='button' onClick={toggleTimer} className='relative w-max bg-transparent  font-semibold text-white'>
           <span className='absolute top-0 left-0 h-full w-full translate-y-px rounded-md bg-[#1a65a1]' />
           <span className='relative block  -translate-y-1 rounded-md bg-[#3C7AAE] px-6 py-3  active:translate-y-0'>
             {timerState === "running" ? "Pause" : "Start"}{" "}

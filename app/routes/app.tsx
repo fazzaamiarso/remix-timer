@@ -19,6 +19,9 @@ export const loader: LoaderFunction = async ({ request }) => {
   const data = await db.task.findMany({ where: { userId: userData.userId }, orderBy: { createdAt: "asc" } });
   return json({ data, userId: userData.userId, isAnonymous: userData.isAnonymous });
 };
+
+const badRequest = (message: string) => json({ message }, 400);
+
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const newTask = formData.get("task");
@@ -30,20 +33,20 @@ export const action: ActionFunction = async ({ request }) => {
   const userData = await getUserId(request);
   if (!userData) throw Error("Anonymous Session should been set!");
 
-  if (typeof actionType !== "string") return json({ message: "Action is not a string" }, 400);
-  if (taskId && typeof taskId !== "string") return json({ message: "TaskId is not a string" }, 400);
-  if (editedTask && typeof editedTask !== "string") return json({ message: "EditedTask is not a string" }, 400);
+  if (actionType && typeof actionType !== "string") return badRequest("Action is not a string");
+  if (taskId && typeof taskId !== "string") return badRequest("TaskId is not a string");
+  if (editedTask && typeof editedTask !== "string") return badRequest("EditedTask is not a string");
 
   switch (actionType) {
     case "create":
       if (typeof newTask !== "string") return json({ message: "Please insert a task!" }, 400);
-      return await createTask(userData.userId, newTask);
+      await createTask(userData.userId, newTask);
     case "delete":
-      if (taskId) return await deleteTask(taskId);
+      if (taskId) await deleteTask(taskId);
     case "toggleTask":
-      if (taskId) return await toggleTask(taskId, isCompleted);
+      if (taskId) await toggleTask(taskId, isCompleted);
     case "edit":
-      if (taskId && editedTask) return await editTask(taskId, editedTask);
+      if (taskId && editedTask) await editTask(taskId, editedTask);
     default:
       throw new Error(`Unhandled action: ${actionType}`);
   }
@@ -53,10 +56,10 @@ export type TimerState = "idle" | "paused" | "running" | "init";
 export default function App() {
   const { data: tasks, isAnonymous } = useLoaderData<{ data: Task[]; isAnonymous: boolean; userId: string }>();
 
-  const [isBreak, setIsBreak] = useState(false); //switch to state machine approach, maybe?
   const [timerState, setTimerState] = useState<TimerState>("init");
   const [selectedTabIdx, setSelectedTabIdx] = useState(0);
 
+  const isBreak = selectedTabIdx === 1;
   const isLimitReached = isAnonymous && tasks.length === 5;
 
   const handleTabsChange = (index: number) => {
@@ -65,7 +68,6 @@ export default function App() {
       !confirm("Are you sure want to end the session? Timer will be reset.")
     )
       return;
-    setIsBreak(index === 1 ? true : false);
     setSelectedTabIdx(index);
     setTimerState("idle");
   };
