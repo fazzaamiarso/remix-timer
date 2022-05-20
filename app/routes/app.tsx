@@ -14,9 +14,7 @@ import { getUserId } from "~/utils/session.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userData = await getUserId(request);
-  if (!userData) {
-    return json({ data: [], userId: "", isAnonymous: true });
-  }
+  if (!userData) throw Error("User Data should exist!");
 
   const data = await db.task.findMany({ where: { userId: userData.userId }, orderBy: { createdAt: "asc" } });
   return json({ data, userId: userData.userId, isAnonymous: userData.isAnonymous });

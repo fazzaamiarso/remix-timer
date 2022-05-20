@@ -77,7 +77,7 @@ export const createAnonymousUser = async (userId: string) => {
   const anonymousUser = await db.user.create({
     data: {
       id: userId,
-      username: "anonymous",
+      username: `anon-${userId}`,
       passwordHash: "anonymous"
     }
   });

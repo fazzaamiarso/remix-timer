@@ -1,6 +1,6 @@
 import { CogIcon, XIcon } from "@heroicons/react/outline";
 import Dialog from "@reach/dialog";
-import { json, LoaderFunction, MetaFunction } from "@remix-run/node";
+import { json, LoaderFunction, MetaFunction, redirect } from "@remix-run/node";
 import {
   Form,
   Links,
@@ -26,7 +26,7 @@ export function links() {
 }
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
-  title: "Remix Timer",
+  title: "POMER | Remix Timer",
   viewport: "width=device-width,initial-scale=1"
 });
 
@@ -36,7 +36,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     const randomString = generateRandomString();
     await createAnonymousUser(randomString);
     const headers = await createUserSession({ userId: randomString, isAnonymous: true }, request);
-    return json({ userId: randomString, isAnonymous: true }, headers);
+    return redirect(request.url, headers);
   }
   return json({ userId: userData.userId, isAnonymous: userData.isAnonymous });
 };
