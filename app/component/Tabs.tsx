@@ -10,17 +10,10 @@ type TimerTabsProps = {
   selectedTabIdx: number;
   timerState: TimerState;
   setTimerState: setStateType<TimerState>;
-  setTimerCaptured: setStateType<{ start: number; stop: number }>;
   handleTabsChange: (selectedIdx: number) => void;
 };
 
-export default function TimerTabs({
-  selectedTabIdx,
-  timerState,
-  setTimerCaptured,
-  setTimerState,
-  handleTabsChange
-}: TimerTabsProps) {
+export default function TimerTabs({ selectedTabIdx, timerState, setTimerState, handleTabsChange }: TimerTabsProps) {
   const pref = usePreferences();
   return (
     <Tabs index={selectedTabIdx} onChange={handleTabsChange}>
@@ -36,7 +29,6 @@ export default function TimerTabs({
               setTimerState={setTimerState}
               timerState={timerState}
               initialTime={pref?.preferences.studyTime ?? 0}
-              setTimerCaptured={setTimerCaptured}
             />
           )}
         </TabPanel>
@@ -47,7 +39,6 @@ export default function TimerTabs({
               setTimerState={setTimerState}
               timerState={timerState}
               initialTime={pref?.preferences.breakTime ?? 0}
-              setTimerCaptured={setTimerCaptured}
             />
           )}
         </TabPanel>

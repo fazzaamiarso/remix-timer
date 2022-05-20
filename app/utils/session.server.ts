@@ -34,16 +34,6 @@ export const destroyUserSession = async (request: Request) => {
   const session = await getUserSession(request);
   return redirect("/app", { headers: { "Set-Cookie": await destroySession(session) } });
 };
-export const generateRandomString = () => {
-  const ALPHABET = "abcdefghijklmnopqrstuvwxyz";
-  const NUMBERS = "0123456789";
-  let randomString = "";
-  for (let i = 0; i < 8; i++) {
-    if (Math.random() > 0.45) randomString += ALPHABET[Math.floor(Math.random() * 25)];
-    else randomString += NUMBERS[Math.floor(Math.random() * 9)];
-  }
-  return randomString;
-};
 
 export const getUserId = async (request: Request) => {
   const session = await getUserSession(request);
@@ -84,3 +74,14 @@ export const createAnonymousUser = async (userId: string) => {
 
   return { id: anonymousUser.id };
 };
+
+export function generateRandomString() {
+  const ALPHABET = "abcdefghijklmnopqrstuvwxyz";
+  const NUMBERS = "0123456789";
+  let randomString = "";
+  for (let i = 0; i < 8; i++) {
+    if (Math.random() > 0.45) randomString += ALPHABET[Math.floor(Math.random() * 25)];
+    else randomString += NUMBERS[Math.floor(Math.random() * 9)];
+  }
+  return randomString;
+}

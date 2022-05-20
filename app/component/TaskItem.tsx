@@ -1,6 +1,5 @@
 import { useFetcher } from "@remix-run/react";
 import React, { useRef, useEffect, ChangeEvent, MouseEvent } from "react";
-import { TimerState } from "~/routes/app";
 import { CheckCircleIcon, PencilIcon, TrashIcon } from "@heroicons/react/solid";
 import { mergeClassNames } from "~/utils/client";
 import { setStateType } from "~/types";
@@ -11,9 +10,6 @@ type TaskItemProps = {
   id: string;
   taskName: string;
   isCompleted: boolean;
-  timerCaptured: { start: number; stop: number };
-  completionTime: number;
-  timerState: TimerState;
   isBreak: boolean;
   activeTaskId: Task["id"];
   editingTaskId: string;
@@ -24,9 +20,6 @@ export function TaskItem({
   id: taskId,
   taskName,
   isCompleted,
-  completionTime,
-  timerCaptured,
-  timerState,
   isBreak,
   activeTaskId,
   editingTaskId,
@@ -34,20 +27,12 @@ export function TaskItem({
   setActiveTaskId
 }: TaskItemProps) {
   const itemFetcher = useFetcher();
-  const mountedTime = useRef<number>(0);
   const editRef = useRef<HTMLInputElement>(null);
   const initialFocusRef = useRef<HTMLButtonElement>(null);
-  const toggleOnStopCount = useRef(0);
 
   const isCurrentlyEditing = editingTaskId === taskId;
   const isActiveTask = activeTaskId === taskId;
   const wasEditing = usePreviousValue(isCurrentlyEditing);
-
-  useEffect(() => {
-    if (timerState === "running") toggleOnStopCount.current = 0;
-    if (!isCompleted) mountedTime.current = Date.now();
-    if (isCompleted) mountedTime.current = 0;
-  }, [isCompleted, timerState]);
 
   useEffect(() => {
     const fetcherAction = itemFetcher.submission?.formData.get("_action");
@@ -63,50 +48,9 @@ export function TaskItem({
   const toggleCompleted = (e: ChangeEvent<HTMLFormElement>) => {
     if (e.target.id !== taskId || isBreak) return;
 
-    const timeWhenClicked = Date.now();
-    if (timerState === "running")
-      return itemFetcher.submit(
-        {
-          taskId,
-          elapsedTime: isCompleted
-            ? String(completionTime)
-            : String(completionTime + (timeWhenClicked - mountedTime.current)),
-          isCompleted: isCompleted ? "" : "on",
-          _action: "toggleTask"
-        },
-        {
-          replace: true,
-          method: "post"
-        }
-      );
-    //TODO: Still has 1 bug
-    if (timerState === "paused") {
-      itemFetcher.submit(
-        {
-          taskId,
-          elapsedTime:
-            toggleOnStopCount.current > 0 || isCompleted
-              ? String(completionTime)
-              : String(
-                  completionTime +
-                    (timerCaptured.stop -
-                      (timerCaptured.stop > mountedTime.current ? mountedTime.current : timerCaptured.start))
-                ),
-          isCompleted: isCompleted ? "" : "on",
-          _action: "toggleTask"
-        },
-        {
-          replace: true,
-          method: "post"
-        }
-      );
-      toggleOnStopCount.current = isCompleted ? toggleOnStopCount.current : toggleOnStopCount.current + 1;
-      return;
-    }
     itemFetcher.submit(
       {
         taskId,
-        elapsedTime: String(completionTime),
         isCompleted: isCompleted ? "" : "on",
         _action: "toggleTask"
       },

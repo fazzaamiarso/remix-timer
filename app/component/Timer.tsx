@@ -9,10 +9,9 @@ type TimerProps = {
   initialTime: number;
   timerState: TimerState;
   setTimerState: setStateType<TimerState>;
-  setTimerCaptured: setStateType<{ start: number; stop: number }>;
 };
 
-export default function Timer({ timerState, initialTime, setTimerState, setTimerCaptured }: TimerProps) {
+export default function Timer({ timerState, initialTime, setTimerState }: TimerProps) {
   const [timer, setTimer] = useState({ minutes: initialTime, seconds: 0 });
   const prevTime = usePreviousValue(initialTime);
 
@@ -36,24 +35,20 @@ export default function Timer({ timerState, initialTime, setTimerState, setTimer
   const finishTimer = () => {
     setTimerState("idle");
     setTimer({ minutes: initialTime, seconds: 0 });
-    setTimerCaptured({ start: 0, stop: 0 });
   };
 
   const resetTimer = () => {
     if (!confirm("Are you sure want to end the session?")) return;
     setTimerState("idle");
     setTimer({ minutes: initialTime, seconds: 0 });
-    setTimerCaptured({ start: 0, stop: 0 });
   };
 
   const toggleTimer = () => {
     if (timerState === "running") {
       setTimerState("paused");
-      setTimerCaptured((prev) => ({ ...prev, stop: Date.now() }));
       return;
     }
     setTimerState("running");
-    setTimerCaptured({ start: Date.now(), stop: 0 });
   };
 
   return (

@@ -26,7 +26,6 @@ export const action: ActionFunction = async ({ request }) => {
   const taskId = formData.get("taskId");
   const actionType = formData.get("_action");
   const isCompleted = Boolean(formData.get("isCompleted"));
-  const elapsedTime = Number(formData.get("elapsedTime"));
 
   const userData = await getUserId(request);
   if (!userData) throw Error("Anonymous Session should been set!");
@@ -42,7 +41,7 @@ export const action: ActionFunction = async ({ request }) => {
     case "delete":
       if (taskId) return await deleteTask(taskId);
     case "toggleTask":
-      if (taskId) return await toggleTask(taskId, elapsedTime, isCompleted);
+      if (taskId) return await toggleTask(taskId, isCompleted);
     case "edit":
       if (taskId && editedTask) return await editTask(taskId, editedTask);
     default:
@@ -56,7 +55,6 @@ export default function App() {
 
   const [isBreak, setIsBreak] = useState(false); //switch to state machine approach, maybe?
   const [timerState, setTimerState] = useState<TimerState>("init");
-  const [timerCaptured, setTimerCaptured] = useState({ start: 0, stop: 0 });
   const [selectedTabIdx, setSelectedTabIdx] = useState(0);
 
   const isLimitReached = isAnonymous && tasks.length === 5;
@@ -77,18 +75,11 @@ export default function App() {
       <TimerTabs
         selectedTabIdx={selectedTabIdx}
         handleTabsChange={handleTabsChange}
-        setTimerCaptured={setTimerCaptured}
         setTimerState={setTimerState}
         timerState={timerState}
       />
       <div className=''>
-        <Tasks
-          tasks={tasks}
-          timerState={timerState}
-          timerCaptured={timerCaptured}
-          isBreak={isBreak}
-          isAnonymous={isAnonymous}
-        />
+        <Tasks tasks={tasks} isBreak={isBreak} isAnonymous={isAnonymous} />
         <TaskForm isLimitReached={isLimitReached} />
       </div>
       <Outlet />

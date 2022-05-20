@@ -26,15 +26,11 @@ export const deleteTask = (taskId: Task["id"]) => {
     }
   });
 };
-export const toggleTask = (
-  taskId: Task["id"],
-  completionTime: Task["completionTime"],
-  isCompleted: Task["isCompleted"]
-) => {
+export const toggleTask = (taskId: Task["id"], isCompleted: Task["isCompleted"]) => {
   return db.task.update({
     where: {
       id: taskId
     },
-    data: { completionTime, isCompleted }
+    data: { isCompleted }
   });
 };

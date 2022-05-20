@@ -1,20 +1,14 @@
 import { Task } from "@prisma/client";
 import { useState } from "react";
-import { TimerState } from "~/routes/app";
 import { TaskItem } from "./TaskItem";
 
 type TasksProps = {
   tasks: Task[];
-  timerState: TimerState;
-  timerCaptured: {
-    start: number;
-    stop: number;
-  };
   isBreak: boolean;
   isAnonymous: boolean;
 };
 
-export default function Tasks({ tasks, timerCaptured, timerState, isBreak, isAnonymous }: TasksProps) {
+export default function Tasks({ tasks, isBreak, isAnonymous }: TasksProps) {
   const [activeTaskId, setActiveTaskId] = useState<Task["id"]>("");
   const [editingTaskId, setEditingTaskId] = useState<Task["id"]>("");
 
@@ -38,9 +32,6 @@ export default function Tasks({ tasks, timerCaptured, timerState, isBreak, isAno
                 id={task.id}
                 taskName={task.taskName}
                 isCompleted={task.isCompleted}
-                completionTime={task.completionTime}
-                timerState={timerState}
-                timerCaptured={timerCaptured}
                 isBreak={isBreak}
                 activeTaskId={activeTaskId}
                 editingTaskId={editingTaskId}
