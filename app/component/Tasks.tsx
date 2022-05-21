@@ -1,4 +1,4 @@
-import { Task } from "@prisma/client";
+import type { Task } from "@prisma/client";
 import { useState } from "react";
 import { TaskItem } from "./TaskItem";
 

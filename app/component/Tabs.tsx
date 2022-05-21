@@ -1,8 +1,8 @@
 import { Tabs, TabList, Tab, TabPanels, TabPanel, useTabsContext } from "@reach/tabs";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { usePreferences } from "~/utils/preferences-provider";
-import { TimerState } from "~/routes/app";
-import { setStateType } from "~/types";
+import type { TimerState } from "~/routes/app";
+import type { setStateType } from "~/types";
 import { mergeClassNames } from "~/utils/client";
 import Timer from "./Timer";
 
@@ -47,14 +47,22 @@ export default function TimerTabs({ selectedTabIdx, timerState, setTimerState, h
   );
 }
 
-function CustomTab({ index, children }: { index: number; children: ReactNode }) {
+type TabProps = {
+  index: number;
+  children: ReactNode;
+  className?: string;
+};
+const CustomTab = ({ index, children }: TabProps) => {
   const { selectedIndex } = useTabsContext();
   const isActiveTab = selectedIndex === index;
   return (
     <Tab
-      className={mergeClassNames("w-full rounded-md px-3 font-semibold text-white", isActiveTab ? "bg-[#43446A]" : "")}
+      className={mergeClassNames(
+        " w-full rounded-md px-3  font-semibold text-white",
+        isActiveTab ? "bg-[#43446A]" : ""
+      )}
     >
       {children}
     </Tab>
   );
-}
+};
