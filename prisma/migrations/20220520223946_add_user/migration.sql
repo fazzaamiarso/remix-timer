@@ -5,7 +5,6 @@
 
 */
 -- AlterTable
-ALTER TABLE "Task" ADD COLUMN     "isCompleted" BOOLEAN NOT NULL DEFAULT false,
 ADD COLUMN     "userId" TEXT NOT NULL;
 
 -- CreateTable
