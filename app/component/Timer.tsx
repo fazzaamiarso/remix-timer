@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useInterval } from "~/hooks/use-interval";
 import { usePreviousValue } from "~/hooks/use-previousvalue";
-import { TimerState } from "~/routes";
+import { TimerState } from "~/routes/app";
 import { setStateType } from "~/types";
 import { mergeClassNames } from "~/utils/client";
 
@@ -9,10 +9,9 @@ type TimerProps = {
   initialTime: number;
   timerState: TimerState;
   setTimerState: setStateType<TimerState>;
-  setTimerCaptured: setStateType<{ start: number; stop: number }>;
 };
 
-export default function Timer({ timerState, initialTime, setTimerState, setTimerCaptured }: TimerProps) {
+export default function Timer({ timerState, initialTime, setTimerState }: TimerProps) {
   const [timer, setTimer] = useState({ minutes: initialTime, seconds: 0 });
   const prevTime = usePreviousValue(initialTime);
 
@@ -36,24 +35,20 @@ export default function Timer({ timerState, initialTime, setTimerState, setTimer
   const finishTimer = () => {
     setTimerState("idle");
     setTimer({ minutes: initialTime, seconds: 0 });
-    setTimerCaptured({ start: 0, stop: 0 });
   };
 
   const resetTimer = () => {
     if (!confirm("Are you sure want to end the session?")) return;
     setTimerState("idle");
     setTimer({ minutes: initialTime, seconds: 0 });
-    setTimerCaptured({ start: 0, stop: 0 });
   };
 
   const toggleTimer = () => {
     if (timerState === "running") {
       setTimerState("paused");
-      setTimerCaptured((prev) => ({ ...prev, stop: Date.now() }));
       return;
     }
     setTimerState("running");
-    setTimerCaptured({ start: Date.now(), stop: 0 });
   };
 
   return (
@@ -62,11 +57,7 @@ export default function Timer({ timerState, initialTime, setTimerState, setTimer
         timer.seconds
       ).padStart(2, "0")}`}</div>
       <div className='flex gap-3 '>
-        <button //TODO: fix the button lift effect
-          type='button'
-          onClick={toggleTimer}
-          className='relative w-max bg-transparent  font-semibold text-white'
-        >
+        <button type='button' onClick={toggleTimer} className='relative w-max bg-transparent  font-semibold text-white'>
           <span className='absolute top-0 left-0 h-full w-full translate-y-px rounded-md bg-[#1a65a1]' />
           <span className='relative block  -translate-y-1 rounded-md bg-[#3C7AAE] px-6 py-3  active:translate-y-0'>
             {timerState === "running" ? "Pause" : "Start"}{" "}

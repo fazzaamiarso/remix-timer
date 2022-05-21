@@ -1,11 +1,28 @@
 import { CogIcon, XIcon } from "@heroicons/react/outline";
 import Dialog from "@reach/dialog";
-import type { MetaFunction } from "@remix-run/node";
-import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration } from "@remix-run/react";
+import { json, LoaderFunction, MetaFunction, redirect } from "@remix-run/node";
+import {
+  Form,
+  Links,
+  LiveReload,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  useLoaderData,
+  useNavigate
+} from "@remix-run/react";
 import styles from "./styles/app.css";
 import dialogStyles from "@reach/dialog/styles.css";
 import { FormEvent, useState } from "react";
 import { PreferencesProvider, usePreferences } from "./utils/preferences-provider";
+import {
+  createAnonymousUser,
+  createUserSession,
+  findUser,
+  generateRandomString,
+  getUserId
+} from "./utils/session.server";
 
 export function links() {
   return [
@@ -15,11 +32,24 @@ export function links() {
 }
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
-  title: "Remix Timer",
+  title: "POMER | Remix Timer",
   viewport: "width=device-width,initial-scale=1"
 });
 
+export const loader: LoaderFunction = async ({ request }) => {
+  const userData = await getUserId(request);
+  if (!userData) {
+    const randomString = generateRandomString();
+    await createAnonymousUser(randomString);
+    const headers = await createUserSession({ userId: randomString, isAnonymous: true }, request);
+    return redirect(request.url, headers);
+  }
+  const username = (await findUser(userData.userId))?.username;
+  return json({ username, isAnonymous: userData.isAnonymous });
+};
+
 export default function App() {
+  const { isAnonymous, username } = useLoaderData<{ username: string; isAnonymous: boolean }>();
   return (
     <html lang='en'>
       <head>
@@ -28,7 +58,7 @@ export default function App() {
       </head>
       <body className='bg-primary font-rubik'>
         <PreferencesProvider>
-          <Header />
+          <Header isAnonymous={isAnonymous} username={username} />
           <Outlet />
         </PreferencesProvider>
         <ScrollRestoration />
@@ -39,11 +69,14 @@ export default function App() {
   );
 }
 
-const Header = () => {
+const Header = ({ isAnonymous, username }: { isAnonymous: boolean; username: string }) => {
   const [isOpen, setIsOpen] = useState(false);
   const closeDialog = () => setIsOpen(false);
   const openDialog = () => setIsOpen(true);
   const { updatePreferences, preferences } = usePreferences();
+  const navigate = useNavigate();
+
+  const openLogin = () => navigate("app/login");
 
   const submitHandler = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -55,12 +88,21 @@ const Header = () => {
   };
 
   return (
-    <header className='mx-auto flex max-w-lg  justify-between pt-8 pb-12 '>
+    <header className='mx-auto flex w-10/12 justify-between  pt-8 pb-12 sm:max-w-lg '>
       <h1 className='text-lg font-bold text-white'>POMER</h1>
       <div className='flex items-center gap-4'>
-        <button className='rounded-md bg-[#3C7AAE] px-3 py-1 text-white' type='button'>
-          Login
-        </button>
+        {isAnonymous ? null : <div className='text-white '>Hello, {username}!</div>}
+        {isAnonymous ? (
+          <button className='rounded-md bg-[#3C7AAE] px-3 py-1 text-white' type='button' onClick={openLogin}>
+            Login
+          </button>
+        ) : (
+          <Form action='/app/logout' method='post'>
+            <button className='rounded-md bg-[#3C7AAE] px-3 py-1 text-white' type='submit'>
+              Logout
+            </button>
+          </Form>
+        )}
         <button className='p-1 text-white' type='button' onClick={openDialog} aria-label='open settings'>
           <CogIcon aria-hidden='true' className='h-6' />
         </button>

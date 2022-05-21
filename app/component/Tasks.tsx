@@ -1,19 +1,14 @@
 import { Task } from "@prisma/client";
 import { useState } from "react";
-import { TimerState } from "~/routes";
 import { TaskItem } from "./TaskItem";
 
 type TasksProps = {
   tasks: Task[];
-  timerState: TimerState;
-  timerCaptured: {
-    start: number;
-    stop: number;
-  };
   isBreak: boolean;
+  isAnonymous: boolean;
 };
 
-export default function Tasks({ tasks, timerCaptured, timerState, isBreak }: TasksProps) {
+export default function Tasks({ tasks, isBreak, isAnonymous }: TasksProps) {
   const [activeTaskId, setActiveTaskId] = useState<Task["id"]>("");
   const [editingTaskId, setEditingTaskId] = useState<Task["id"]>("");
 
@@ -23,6 +18,11 @@ export default function Tasks({ tasks, timerCaptured, timerState, isBreak }: Tas
       <div className='flex w-full items-center justify-center py-4'>
         <p className='text-lg font-semibold text-white'># {activeTaskName ?? "No active task"}</p>
       </div>
+      {isAnonymous ? (
+        <div className='ml-auto text-white'>
+          <span>{tasks.length}/5</span>
+        </div>
+      ) : null}
       <ul className='space-y-4 pb-4'>
         {tasks.length ? (
           tasks.map((task) => {
@@ -32,9 +32,6 @@ export default function Tasks({ tasks, timerCaptured, timerState, isBreak }: Tas
                 id={task.id}
                 taskName={task.taskName}
                 isCompleted={task.isCompleted}
-                completionTime={task.completionTime}
-                timerState={timerState}
-                timerCaptured={timerCaptured}
                 isBreak={isBreak}
                 activeTaskId={activeTaskId}
                 editingTaskId={editingTaskId}

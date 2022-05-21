@@ -1,9 +1,10 @@
 import type { Task } from "@prisma/client";
 import { db } from "./prisma.server";
 
-export const createTask = (taskName: Task["taskName"]) => {
+export const createTask = (userId: Task["userId"], taskName: Task["taskName"]) => {
   return db.task.create({
     data: {
+      userId,
       taskName
     }
   });
@@ -25,15 +26,11 @@ export const deleteTask = (taskId: Task["id"]) => {
     }
   });
 };
-export const toggleTask = (
-  taskId: Task["id"],
-  completionTime: Task["completionTime"],
-  isCompleted: Task["isCompleted"]
-) => {
+export const toggleTask = (taskId: Task["id"], isCompleted: Task["isCompleted"]) => {
   return db.task.update({
     where: {
       id: taskId
     },
-    data: { completionTime, isCompleted }
+    data: { isCompleted }
   });
 };
