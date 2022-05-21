@@ -5,7 +5,7 @@
 
 */
 -- AlterTable
-ADD COLUMN     "userId" TEXT NOT NULL;
+ALTER TABLE "Task" ADD COLUMN     "userId" TEXT NOT NULL;
 
 -- CreateTable
 CREATE TABLE "User" (
