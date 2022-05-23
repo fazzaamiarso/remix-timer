@@ -1,10 +1,12 @@
 import { useFetcher } from "@remix-run/react";
-import React, { useRef, useEffect, ChangeEvent, MouseEvent } from "react";
+import type { ChangeEvent, MouseEvent } from "react";
+import React, { useRef, useEffect } from "react";
 import { CheckCircleIcon, PencilIcon, TrashIcon } from "@heroicons/react/solid";
 import { mergeClassNames } from "~/utils/client";
-import { setStateType } from "~/types";
-import { Task } from "@prisma/client";
+import type { setStateType } from "~/types";
+import type { Task } from "@prisma/client";
 import { usePreviousValue } from "~/hooks/use-previousvalue";
+import { motion } from "framer-motion";
 
 type TaskItemProps = {
   id: string;
@@ -66,7 +68,11 @@ export function TaskItem({
   };
 
   return (
-    <li
+    <motion.li
+      layout
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      transition={{ ease: "easeIn" }}
       onClick={handleSetActive}
       className={mergeClassNames(
         "rounded-md border-l-4 bg-[#43446A] p-4 text-white ",
@@ -152,6 +158,6 @@ export function TaskItem({
           </>
         )}
       </itemFetcher.Form>
-    </li>
+    </motion.li>
   );
 }

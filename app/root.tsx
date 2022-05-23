@@ -66,7 +66,7 @@ export default function App() {
         </PreferencesProvider>
         <ScrollRestoration />
         <Scripts />
-        <LiveReload />
+        <LiveReload port={8002} />
       </body>
     </html>
   );
@@ -132,13 +132,14 @@ const Header = ({ isAnonymous, username }: { isAnonymous: boolean; username: str
       </div>
       <AnimatePresence initial={false} exitBeforeEnter>
         {isOpen ? (
-          <DialogMotion
+          <Dialog
+            as={motion.div}
             aria-labelledby='dialog-title'
             isOpen={isOpen}
             onDismiss={closeDialog}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial='hidden'
+            animate='visible'
+            exit='exit'
             variants={dropIn}
             className='!w-10/12 space-y-8 rounded-md sm:max-w-lg'
           >
@@ -185,11 +186,9 @@ const Header = ({ isAnonymous, username }: { isAnonymous: boolean; username: str
                 </button>
               </div>
             </form>
-          </DialogMotion>
+          </Dialog>
         ) : null}
       </AnimatePresence>
     </header>
   );
 };
-
-const DialogMotion = motion(Dialog, { forwardMotionProps: true });
