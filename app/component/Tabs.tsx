@@ -15,6 +15,7 @@ type TimerTabsProps = {
 
 export default function TimerTabs({ selectedTabIdx, timerState, setTimerState, handleTabsChange }: TimerTabsProps) {
   const pref = usePreferences();
+
   return (
     <Tabs index={selectedTabIdx} onChange={handleTabsChange}>
       <TabList className='mx-auto flex w-full justify-center gap-4 rounded-md bg-[#272851] p-1 '>
@@ -50,19 +51,20 @@ export default function TimerTabs({ selectedTabIdx, timerState, setTimerState, h
 type TabProps = {
   index: number;
   children: ReactNode;
-  className?: string;
 };
 const CustomTab = ({ index, children }: TabProps) => {
   const { selectedIndex } = useTabsContext();
   const isActiveTab = selectedIndex === index;
   return (
-    <Tab
-      className={mergeClassNames(
-        " w-full rounded-md px-3  font-semibold text-white",
-        isActiveTab ? "bg-[#43446A]" : ""
-      )}
-    >
-      {children}
-    </Tab>
+    <>
+      <Tab
+        className={mergeClassNames(
+          "relative w-full rounded-md  px-3 font-semibold text-white",
+          isActiveTab ? "bg-[#43446A]" : ""
+        )}
+      >
+        {children}
+      </Tab>
+    </>
   );
 };

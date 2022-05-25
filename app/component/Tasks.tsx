@@ -1,7 +1,7 @@
 import type { Task } from "@prisma/client";
 import { useState } from "react";
 import { TaskItem } from "./TaskItem";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion, LayoutGroup } from "framer-motion";
 
 type TasksProps = {
   tasks: Task[];
@@ -25,7 +25,7 @@ export default function Tasks({ tasks, isBreak, isAnonymous }: TasksProps) {
         </div>
       ) : null}
       <motion.ul layout className='space-y-4 pb-4'>
-        <AnimatePresence>
+        <LayoutGroup>
           {tasks.length ? (
             tasks.map((task) => {
               return (
@@ -47,7 +47,7 @@ export default function Tasks({ tasks, isBreak, isAnonymous }: TasksProps) {
               <p className='text-2xl font-bold text-white'> No task</p>
             </div>
           )}
-        </AnimatePresence>
+        </LayoutGroup>
       </motion.ul>
     </>
   );

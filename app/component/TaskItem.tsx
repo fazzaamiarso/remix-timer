@@ -37,6 +37,8 @@ export function TaskItem({
   const isActiveTask = activeTaskId === taskId;
   const wasEditing = usePreviousValue(isCurrentlyEditing);
 
+  const FetcherMotion = motion(itemFetcher.Form);
+
   useEffect(() => {
     if (fetcherAction === "edit") setEditingTaskId("");
     if (fetcherAction === "delete" && isActiveTask) setActiveTaskId("");
@@ -70,16 +72,13 @@ export function TaskItem({
   return (
     <motion.li
       layout
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      transition={{ ease: "easeIn" }}
       onClick={handleSetActive}
       className={mergeClassNames(
         "rounded-md border-l-4 bg-[#43446A] p-4 text-white ",
         isActiveTask ? "border-red-400" : "border-[#43446A]"
       )}
     >
-      <itemFetcher.Form method='post' className='flex justify-between gap-2' onChange={toggleCompleted}>
+      <FetcherMotion layout method='post' className='flex justify-between gap-2' onChange={toggleCompleted}>
         <input type='text' hidden name='taskId' defaultValue={taskId} />
         {isCurrentlyEditing ? (
           <div className='flex w-full flex-col gap-4'>
@@ -157,7 +156,7 @@ export function TaskItem({
             </div>
           </>
         )}
-      </itemFetcher.Form>
+      </FetcherMotion>
     </motion.li>
   );
 }
