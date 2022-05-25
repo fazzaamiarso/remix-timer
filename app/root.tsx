@@ -1,5 +1,5 @@
 import { CogIcon, XIcon } from "@heroicons/react/outline";
-import Dialog from "@reach/dialog";
+import { DialogContent, DialogOverlay } from "@reach/dialog";
 import type { LoaderFunction, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
@@ -89,7 +89,27 @@ const dropIn = {
   },
   exit: {
     y: "100vh",
+    opacity: 0,
+    transition: {
+      duration: 0.1
+    }
+  }
+};
+const overlay = {
+  hidden: {
     opacity: 0
+  },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.1
+    }
+  },
+  exit: {
+    opacity: 0,
+    transition: {
+      duration: 0.1
+    }
   }
 };
 const Header = ({ isAnonymous, username }: { isAnonymous: boolean; username: string }) => {
@@ -132,61 +152,69 @@ const Header = ({ isAnonymous, username }: { isAnonymous: boolean; username: str
       </div>
       <AnimatePresence initial={false} exitBeforeEnter>
         {isOpen ? (
-          <Dialog
+          <DialogOverlay
             as={motion.div}
-            aria-labelledby='dialog-title'
-            isOpen={isOpen}
-            onDismiss={closeDialog}
+            variants={overlay}
             initial='hidden'
             animate='visible'
             exit='exit'
-            variants={dropIn}
-            className='!w-10/12 space-y-8 rounded-md sm:max-w-lg'
+            aria-labelledby='dialog-title'
+            isOpen={isOpen}
+            onDismiss={closeDialog}
           >
-            <div className='flex w-full items-center'>
-              <h2 className='text-2xl font-bold' id='dialog-title'>
-                Settings
-              </h2>
-              <button className='ml-auto p-1' type='button' onClick={closeDialog} aria-label='close settings'>
-                <XIcon aria-hidden='true' className='h-6' />
-              </button>
-            </div>
-            <form onSubmit={submitHandler} className='flex flex-col'>
-              <ul className='flex flex-col gap-4'>
-                <li className='flex w-full items-center justify-between'>
-                  <label htmlFor='study-time' className='font-semibold'>
-                    Study Time (in minutes)
-                  </label>
-                  <input
-                    id='study-time'
-                    type='number'
-                    name='study_time'
-                    defaultValue={preferences.studyTime}
-                    className='w-24'
-                    min={1}
-                  />
-                </li>
-                <li className='flex w-full items-center justify-between'>
-                  <label htmlFor='break-time' className='font-semibold'>
-                    Break Time (in minutes)
-                  </label>
-                  <input
-                    id='break-time'
-                    type='number'
-                    name='break_time'
-                    defaultValue={preferences.breakTime}
-                    className='w-24'
-                    min={1}
-                  />
-                </li>
-              </ul>
-              <div className='flex items-center gap-2 self-end pt-8'>
-                <button type='submit' className='bg-[#3C7AAE] px-3 py-1 text-white'>
-                  save
+            <DialogContent
+              as={motion.div}
+              initial='hidden'
+              animate='visible'
+              exit='exit'
+              variants={dropIn}
+              className='!w-10/12 space-y-8 rounded-md sm:max-w-lg'
+            >
+              <div className='flex w-full items-center'>
+                <h2 className='text-2xl font-bold' id='dialog-title'>
+                  Settings
+                </h2>
+                <button className='ml-auto p-1' type='button' onClick={closeDialog} aria-label='close settings'>
+                  <XIcon aria-hidden='true' className='h-6' />
                 </button>
               </div>
-            </form>
-          </Dialog>
+              <form onSubmit={submitHandler} className='flex flex-col'>
+                <ul className='flex flex-col gap-4'>
+                  <li className='flex w-full items-center justify-between'>
+                    <label htmlFor='study-time' className='font-semibold'>
+                      Study Time (in minutes)
+                    </label>
+                    <input
+                      id='study-time'
+                      type='number'
+                      name='study_time'
+                      defaultValue={preferences.studyTime}
+                      className='w-24'
+                      min={1}
+                    />
+                  </li>
+                  <li className='flex w-full items-center justify-between'>
+                    <label htmlFor='break-time' className='font-semibold'>
+                      Break Time (in minutes)
+                    </label>
+                    <input
+                      id='break-time'
+                      type='number'
+                      name='break_time'
+                      defaultValue={preferences.breakTime}
+                      className='w-24'
+                      min={1}
+                    />
+                  </li>
+                </ul>
+                <div className='flex items-center gap-2 self-end pt-8'>
+                  <button type='submit' className='bg-[#3C7AAE] px-3 py-1 text-white'>
+                    save
+                  </button>
+                </div>
+              </form>
+            </DialogContent>
+          </DialogOverlay>
         ) : null}
       </AnimatePresence>
     </header>
