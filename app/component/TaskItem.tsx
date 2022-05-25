@@ -1,10 +1,12 @@
 import { useFetcher } from "@remix-run/react";
-import React, { useRef, useEffect, ChangeEvent, MouseEvent } from "react";
+import type { ChangeEvent, MouseEvent } from "react";
+import React, { useRef, useEffect } from "react";
 import { CheckCircleIcon, PencilIcon, TrashIcon } from "@heroicons/react/solid";
 import { mergeClassNames } from "~/utils/client";
-import { setStateType } from "~/types";
-import { Task } from "@prisma/client";
+import type { setStateType } from "~/types";
+import type { Task } from "@prisma/client";
 import { usePreviousValue } from "~/hooks/use-previousvalue";
+import { motion } from "framer-motion";
 
 type TaskItemProps = {
   id: string;
@@ -34,6 +36,8 @@ export function TaskItem({
   const isCurrentlyEditing = editingTaskId === taskId;
   const isActiveTask = activeTaskId === taskId;
   const wasEditing = usePreviousValue(isCurrentlyEditing);
+
+  const FetcherMotion = motion(itemFetcher.Form);
 
   useEffect(() => {
     if (fetcherAction === "edit") setEditingTaskId("");
@@ -66,14 +70,15 @@ export function TaskItem({
   };
 
   return (
-    <li
+    <motion.li
+      layout
       onClick={handleSetActive}
       className={mergeClassNames(
         "rounded-md border-l-4 bg-[#43446A] p-4 text-white ",
         isActiveTask ? "border-red-400" : "border-[#43446A]"
       )}
     >
-      <itemFetcher.Form method='post' className='flex justify-between gap-2' onChange={toggleCompleted}>
+      <FetcherMotion layout method='post' className='flex justify-between gap-2' onChange={toggleCompleted}>
         <input type='text' hidden name='taskId' defaultValue={taskId} />
         {isCurrentlyEditing ? (
           <div className='flex w-full flex-col gap-4'>
@@ -151,7 +156,7 @@ export function TaskItem({
             </div>
           </>
         )}
-      </itemFetcher.Form>
-    </li>
+      </FetcherMotion>
+    </motion.li>
   );
 }

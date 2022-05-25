@@ -3,7 +3,7 @@ import Dialog from "@reach/dialog";
 import type { ActionFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useNavigate } from "@remix-run/react";
-import { createUserSession, deleteUser, getUserId, login } from "~/utils/session.server";
+import { createUserSession, deleteUser, getUserId, register } from "~/utils/session.server";
 
 type LoginError = { message: string };
 export const action: ActionFunction = async ({ request }) => {
@@ -14,8 +14,8 @@ export const action: ActionFunction = async ({ request }) => {
   if (typeof username !== "string") return json({ message: "username is not string!" });
   if (typeof password !== "string") return json({ message: "password is not string!" });
 
-  const user = await login({ username, password });
-  if (!user) return json({ message: "Incorrect credentials combination!" });
+  const user = await register({ username, password });
+  if (!user) return json({ message: "User already exist!" });
 
   const anonymousUser = await getUserId(request);
   if (!anonymousUser) throw Error("Anonymous user should be set!");
@@ -39,12 +39,12 @@ export default function Login() {
       <div className='flex w-full items-center'>
         <div className='flex flex-col'>
           <h2 className='text-2xl font-bold' id='dialog-title'>
-            Login
+            Register
           </h2>
           <h3 className='space-x-2'>
-            Doesn't have an account?{" "}
-            <Link to='/app/register' prefetch='intent' className='text-blue-500 underline hover:no-underline'>
-              register
+            Already have an account?{" "}
+            <Link to='/app/login' prefetch='intent' className=' text-blue-500 underline hover:no-underline'>
+              login
             </Link>
           </h3>
         </div>
@@ -69,7 +69,7 @@ export default function Login() {
           <input type='password' name='password' id='password' required className='w-full rounded-md' />
         </div>
         <button type='submit' className='mt-4 rounded-md bg-[#3C7AAE] px-3 py-2 text-white'>
-          Login
+          Register
         </button>
       </Form>
     </Dialog>

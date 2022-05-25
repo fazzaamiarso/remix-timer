@@ -1,6 +1,6 @@
 import { db } from "~/utils/prisma.server";
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
-import { compare } from "bcryptjs";
+import bcrypt from "bcryptjs";
 
 const sessionSecret = process.env.SESSION_SECRET;
 if (!sessionSecret) throw Error("Please set a session secret");
@@ -53,10 +53,23 @@ export const login = async ({ username, password }: LoginData) => {
   const user = await db.user.findUnique({ where: { username } });
   if (!user) return null;
 
-  const isPasswordMatched = await compare(password, user.passwordHash);
+  const isPasswordMatched = await bcrypt.compare(password, user.passwordHash);
   if (!isPasswordMatched) return null;
 
   return { id: user.id, username };
+};
+export const register = async ({ username, password }: LoginData) => {
+  const user = await db.user.findUnique({ where: { username } });
+  if (user) return null;
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const registeredUser = await db.user.create({
+    data: {
+      username,
+      passwordHash: hashedPassword
+    }
+  });
+
+  return { id: registeredUser.id, username: registeredUser.username };
 };
 
 export const deleteUser = async (userId: string) => {

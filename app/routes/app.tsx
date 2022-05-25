@@ -11,6 +11,7 @@ import { createTask, deleteTask, editTask, toggleTask } from "~/utils/task.serve
 import TimerTabs from "~/component/Tabs";
 import { usePreviousValue } from "~/hooks/use-previousvalue";
 import { getUserId } from "~/utils/session.server";
+import { motion, LayoutGroup } from "framer-motion";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userData = await getUserId(request);
@@ -81,8 +82,10 @@ export default function App() {
         timerState={timerState}
       />
       <div className=''>
-        <Tasks tasks={tasks} isBreak={isBreak} isAnonymous={isAnonymous} />
-        <TaskForm isLimitReached={isLimitReached} />
+        <LayoutGroup>
+          <Tasks tasks={tasks} isBreak={isBreak} isAnonymous={isAnonymous} />
+          <TaskForm isLimitReached={isLimitReached} />
+        </LayoutGroup>
       </div>
       <Outlet />
     </main>
@@ -114,9 +117,9 @@ function TaskForm({ isLimitReached }: { isLimitReached: boolean }) {
   }, [transition.type]);
 
   return (
-    <Form method='post' className={mergeClassNames("rounded-md ", isOpen ? "bg-[#43446A] p-4" : "")}>
+    <FormMotion method='post' layout className={mergeClassNames("rounded-md ", isOpen ? "bg-[#43446A] p-4" : "")}>
       {isOpen ? (
-        <div className='flex flex-col gap-4'>
+        <motion.div key='task-input' layout='position' className='flex flex-col gap-4'>
           <input
             ref={inputRef}
             type='text'
@@ -143,9 +146,11 @@ function TaskForm({ isLimitReached }: { isLimitReached: boolean }) {
               Add Task
             </button>
           </div>
-        </div>
+        </motion.div>
       ) : (
-        <button
+        <motion.button
+          key='task-btn'
+          layout
           disabled={isLimitReached}
           ref={initialFocusRef}
           type='button'
@@ -153,8 +158,10 @@ function TaskForm({ isLimitReached }: { isLimitReached: boolean }) {
           className='w-full rounded-md border-2 border-dashed border-white px-1  py-2 font-semibold text-white hover:border-gray-300 disabled:border-gray-100 disabled:text-gray-100 '
         >
           Add task
-        </button>
+        </motion.button>
       )}
-    </Form>
+    </FormMotion>
   );
 }
+
+const FormMotion = motion(Form, { forwardMotionProps: true });

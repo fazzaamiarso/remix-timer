@@ -1,6 +1,7 @@
-import { Task } from "@prisma/client";
+import type { Task } from "@prisma/client";
 import { useState } from "react";
 import { TaskItem } from "./TaskItem";
+import { motion, LayoutGroup } from "framer-motion";
 
 type TasksProps = {
   tasks: Task[];
@@ -23,29 +24,31 @@ export default function Tasks({ tasks, isBreak, isAnonymous }: TasksProps) {
           <span>{tasks.length}/5</span>
         </div>
       ) : null}
-      <ul className='space-y-4 pb-4'>
-        {tasks.length ? (
-          tasks.map((task) => {
-            return (
-              <TaskItem
-                key={task.id}
-                id={task.id}
-                taskName={task.taskName}
-                isCompleted={task.isCompleted}
-                isBreak={isBreak}
-                activeTaskId={activeTaskId}
-                editingTaskId={editingTaskId}
-                setEditingTaskId={setEditingTaskId}
-                setActiveTaskId={setActiveTaskId}
-              />
-            );
-          })
-        ) : (
-          <div className='flex w-full items-center justify-center py-4'>
-            <p className='text-2xl font-bold text-white'> No task</p>
-          </div>
-        )}
-      </ul>
+      <motion.ul layout className='space-y-4 pb-4'>
+        <LayoutGroup>
+          {tasks.length ? (
+            tasks.map((task) => {
+              return (
+                <TaskItem
+                  key={task.id}
+                  id={task.id}
+                  taskName={task.taskName}
+                  isCompleted={task.isCompleted}
+                  isBreak={isBreak}
+                  activeTaskId={activeTaskId}
+                  editingTaskId={editingTaskId}
+                  setEditingTaskId={setEditingTaskId}
+                  setActiveTaskId={setActiveTaskId}
+                />
+              );
+            })
+          ) : (
+            <div className='flex w-full items-center justify-center py-4'>
+              <p className='text-2xl font-bold text-white'> No task</p>
+            </div>
+          )}
+        </LayoutGroup>
+      </motion.ul>
     </>
   );
 }
